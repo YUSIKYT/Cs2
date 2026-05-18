@@ -3,579 +3,571 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>iPhone 14 Pro Dynamic Island Simulator</title>
-    <!-- Tailwind CSS для стилей -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Dynamic Island - Интеграция в реальную челку</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Подключаем иконки Lucide для интерфейса -->
+    <!-- Иконки Lucide -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
+        :root {
+            /* Переменные калибровки под физическую челку пользователя */
+            --notch-offset-y: 12px;
+            --notch-scale-x: 1.0;
+            --notch-scale-y: 1.0;
+            --notch-radius: 9999px;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
-            background: radial-gradient(circle at center, #1e1e2e 0%, #0f0f16 100%);
+            background-color: #000;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
         }
 
-        /* Плавные переходы для Dynamic Island с пружинным эффектом */
-        .dynamic-island-transition {
-            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15);
+        /* Плавные пружинные переходы */
+        .island-anim {
+            transition: all 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.2);
+            top: var(--notch-offset-y);
         }
 
-        /* Различные состояния Dynamic Island */
-        .island-compact {
-            width: 110px;
-            height: 30px;
-            border-radius: 9999px;
+        /* Состояния челки с учетом калибровочных множителей */
+        .state-compact {
+            width: calc(110px * var(--notch-scale-x));
+            height: calc(30px * var(--notch-scale-y));
+            border-radius: var(--notch-radius);
         }
 
-        .island-music {
-            width: 320px;
-            height: 44px;
-            border-radius: 9999px;
+        .state-music {
+            width: min(calc(330px * var(--notch-scale-x)), 94vw);
+            height: 48px;
+            border-radius: 24px;
         }
 
-        .island-call {
-            width: 340px;
-            height: 75px;
-            border-radius: 35px;
+        .state-call {
+            width: min(calc(345px * var(--notch-scale-x)), 94vw);
+            height: 76px;
+            border-radius: 28px;
         }
 
-        .island-faceid {
-            width: 130px;
-            height: 130px;
-            border-radius: 35px;
-        }
-
-        .island-charging {
-            width: 240px;
-            height: 40px;
-            border-radius: 9999px;
-        }
-
-        .island-notification {
-            width: 340px;
-            height: 90px;
+        .state-faceid {
+            width: calc(125px * var(--notch-scale-x));
+            height: calc(125px * var(--notch-scale-y));
             border-radius: 32px;
         }
 
+        .state-charging {
+            width: min(calc(240px * var(--notch-scale-x)), 90vw);
+            height: 42px;
+            border-radius: var(--notch-radius);
+        }
+
+        .state-notification {
+            width: min(calc(350px * var(--notch-scale-x)), 95vw);
+            height: 94px;
+            border-radius: 28px;
+        }
+
         /* Анимация пульсации для Face ID */
-        @keyframes scan {
-            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+        @keyframes pulse-ring {
+            0%, 100% { opacity: 0.4; transform: scale(0.95); }
             50% { opacity: 1; transform: scale(1.05); }
         }
-        .animate-scan {
-            animation: scan 2s infinite ease-in-out;
+        .animate-pulse-ring {
+            animation: pulse-ring 2s infinite ease-in-out;
         }
 
-        /* Анимация музыкального эквалайзера */
-        .bar {
+        /* Анимация волн эквалайзера */
+        .eq-bar {
             width: 3px;
             background-color: #10b981;
-            animation: bounce 0.8s infinite ease-in-out alternate;
+            animation: eq-bounce 0.8s infinite ease-in-out alternate;
         }
-        .bar:nth-child(2) { animation-delay: 0.15s; }
-        .bar:nth-child(3) { animation-delay: 0.3s; }
-        .bar:nth-child(4) { animation-delay: 0.45s; }
-        .bar:nth-child(5) { animation-delay: 0.2s; }
+        .eq-bar:nth-child(2) { animation-delay: 0.15s; }
+        .eq-bar:nth-child(3) { animation-delay: 0.3s; }
+        .eq-bar:nth-child(4) { animation-delay: 0.45s; }
+        .eq-bar:nth-child(5) { animation-delay: 0.25s; }
 
-        @keyframes bounce {
+        @keyframes eq-bounce {
             10% { height: 4px; }
-            100% { height: 16px; }
-        }
-
-        /* Стилизация скроллбара */
-        ::-webkit-scrollbar {
-            width: 6px;
-        }
-        ::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.05);
-        }
-        ::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.2);
-            border-radius: 3px;
+            100% { height: 18px; }
         }
     </style>
 </head>
-<body class="min-h-screen text-white flex flex-col items-center justify-center p-4 overflow-x-hidden">
+<body class="w-screen h-screen flex flex-col justify-between text-white relative">
 
-    <div class="w-full max-w-6xl flex flex-col lg:flex-row items-center justify-center gap-12 z-10">
+    <!-- ФОНОВЫЕ ОБОИ (Стильный градиент с размытием) -->
+    <div class="absolute inset-0 -z-20 bg-gradient-to-tr from-slate-900 via-indigo-950 to-purple-900"></div>
+    <div class="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-blue-900/40 via-transparent to-transparent opacity-80"></div>
+
+    <!-- 1. ИНТЕРАКТИВНЫЙ DYNAMIC ISLAND (Расположен на самом верху экрана) -->
+    <div class="absolute top-0 left-0 right-0 flex justify-center z-50 pointer-events-none">
+        <div id="realDynamicIsland" onclick="handleIslandTap(event)" class="island-anim state-compact bg-black shadow-[0_10px_30px_rgba(0,0,0,0.6)] flex items-center justify-center overflow-hidden pointer-events-auto cursor-pointer">
+            
+            <!-- Состояние: Компактное (просто чёрный вырез) -->
+            <div id="view-compact" class="w-full h-full flex items-center justify-between px-3">
+                <!-- Камера-объектив слева внутри компактной области (визуальный эффект) -->
+                <div class="w-3 h-3 rounded-full bg-zinc-900/80 border border-zinc-950/40 flex items-center justify-center">
+                    <div class="w-1 h-1 rounded-full bg-blue-950/60"></div>
+                </div>
+                <!-- Индикатор датчика справа -->
+                <div class="w-2 h-2 rounded-full bg-zinc-900/60"></div>
+            </div>
+
+            <!-- Состояние: Музыкальный плеер -->
+            <div id="view-music" class="hidden w-full h-full items-center justify-between px-4">
+                <div class="flex items-center gap-2.5 min-w-0">
+                    <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=100" class="w-7.5 h-7.5 rounded-lg object-cover border border-white/10 flex-shrink-0" alt="Cover">
+                    <div class="flex flex-col text-left min-w-0">
+                        <span class="text-[11px] font-bold text-white leading-tight truncate w-28 md:w-40">Starboy</span>
+                        <span class="text-[9px] text-zinc-400 leading-none mt-0.5 truncate">The Weeknd</span>
+                    </div>
+                </div>
+                <!-- Кнопки управления треком (для примера) -->
+                <div class="flex items-center gap-3">
+                    <i data-lucide="skip-back" class="w-3.5 h-3.5 text-zinc-400 hover:text-white transition-colors"></i>
+                    <i data-lucide="pause" class="w-3.5 h-3.5 text-white"></i>
+                    <i data-lucide="skip-forward" class="w-3.5 h-3.5 text-zinc-400 hover:text-white transition-colors"></i>
+                    <!-- Эквалайзер -->
+                    <div class="flex items-end gap-[2px] h-4 ml-1">
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                        <div class="eq-bar"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Состояние: Входящий звонок -->
+            <div id="view-call" class="hidden w-full h-full items-center justify-between px-4">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 rounded-full bg-gradient-to-br from-pink-500 to-rose-500 flex items-center justify-center font-bold text-sm text-white shadow-md shadow-black/20">
+                        МС
+                    </div>
+                    <div class="flex flex-col text-left">
+                        <span class="text-[10px] text-zinc-400 uppercase tracking-wider font-semibold">Входящий вызов</span>
+                        <span class="text-[13px] font-bold leading-tight">Мария Сидорова</span>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <button onclick="event.stopPropagation(); changeState('compact'); showToast('Вызов отклонен');" class="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-transform active:scale-90">
+                        <i data-lucide="phone-off" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="event.stopPropagation(); showToast('Соединение...'); changeState('compact');" class="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white transition-transform active:scale-90">
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Состояние: Сканирование Face ID -->
+            <div id="view-faceid" class="hidden w-full h-full flex-col items-center justify-center p-2">
+                <i data-lucide="scan-face" class="w-10 h-10 text-indigo-400 animate-pulse-ring"></i>
+                <span class="text-[10px] font-semibold text-zinc-400 mt-1.5 tracking-wide">Подтвердите Face ID</span>
+            </div>
+
+            <!-- Состояние: Зарядное устройство -->
+            <div id="view-charging" class="hidden w-full h-full items-center justify-between px-5">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="zap" class="w-4 h-4 text-emerald-400 fill-emerald-400"></i>
+                    <span class="text-xs font-semibold text-zinc-300">Подключено к сети</span>
+                </div>
+                <span class="text-xs font-bold text-emerald-400">92%</span>
+            </div>
+
+            <!-- Состояние: Уведомление (Телеграм) -->
+            <div id="view-notification" class="hidden w-full h-full flex flex-col justify-between p-3.5 text-left">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-2">
+                        <div class="w-5 h-5 rounded-md bg-sky-500 flex items-center justify-center">
+                            <i data-lucide="send" class="w-3 h-3 text-white fill-white"></i>
+                        </div>
+                        <span class="text-[11px] font-bold text-zinc-400">Telegram</span>
+                    </div>
+                    <span class="text-[9px] text-zinc-500 font-medium">сейчас</span>
+                </div>
+                <div class="flex flex-col mt-1">
+                    <span class="text-[12px] font-bold text-white leading-tight">Никита (Разработчик)</span>
+                    <p class="text-[11px] text-zinc-300 truncate mt-0.5">Привет! Я настроил челку. Как она сидит на твоем экране? Можешь откалибровать в меню ниже!</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+
+    <!-- ВЕРХНЯЯ СТАТУС-ПАНЕЛЬ (Адаптирована под системную челку) -->
+    <div class="w-full pt-3 px-6 flex justify-between items-center text-xs font-semibold z-30 select-none pointer-events-none mt-1">
+        <!-- Время (слева) -->
+        <span id="liveTime" class="tracking-tight text-white/90">09:41</span>
         
-        <!-- Левая колонка: Описание и пульт управления -->
-        <div class="w-full lg:w-1/2 flex flex-col space-y-6 max-w-md">
-            <div>
-                <span class="bg-indigo-600/30 text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Интерактивный концепт</span>
-                <h1 class="text-3xl md:text-4xl font-extrabold mt-2 tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
-                    Dynamic Island OS
-                </h1>
-                <p class="text-slate-400 mt-2 text-sm leading-relaxed">
-                    Почувствуйте магию интерактивной «чёлки» iPhone 14 Pro на веб-технологиях. Нажимайте на приложения внутри симулятора или используйте кнопки быстрого запуска ниже.
-                </p>
+        <!-- Сеть, батарея (справа) -->
+        <div class="flex items-center gap-1.5 text-white/90">
+            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+            <span class="text-[10px]">LTE</span>
+            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+            <div class="flex items-center gap-0.5 border border-white/30 rounded px-1 py-px text-[9px] leading-none bg-black/10">
+                <span>92</span>
+                <i data-lucide="battery" class="w-2.5 h-2.5"></i>
             </div>
+        </div>
+    </div>
 
-            <!-- Пульт управления -->
-            <div class="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl space-y-4">
-                <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-2">
-                    <i data-lucide="sliders" class="w-4 h-4 text-indigo-400"></i> Панель управления
-                </h2>
-                
-                <div class="grid grid-cols-2 gap-3">
-                    <button onclick="triggerState('music')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
-                        <span class="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
-                            <i data-lucide="music" class="w-5 h-5"></i>
-                        </span>
-                        <div>
-                            <p class="font-medium text-xs md:text-sm">Плеер</p>
-                            <p class="text-[10px] text-slate-400">Музыка</p>
-                        </div>
-                    </button>
 
-                    <button onclick="triggerState('call')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
-                        <span class="p-2 bg-blue-500/20 text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
-                            <i data-lucide="phone-call" class="w-5 h-5"></i>
-                        </span>
-                        <div>
-                            <p class="font-medium text-xs md:text-sm">Звонок</p>
-                            <p class="text-[10px] text-slate-400">Входящий</p>
-                        </div>
-                    </button>
-
-                    <button onclick="triggerState('faceid')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
-                        <span class="p-2 bg-purple-500/20 text-purple-400 rounded-xl group-hover:scale-110 transition-transform">
-                            <i data-lucide="scan-face" class="w-5 h-5"></i>
-                        </span>
-                        <div>
-                            <p class="font-medium text-xs md:text-sm">Face ID</p>
-                            <p class="text-[10px] text-slate-400">Сканирование</p>
-                        </div>
-                    </button>
-
-                    <button onclick="triggerState('charging')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
-                        <span class="p-2 bg-amber-500/20 text-amber-400 rounded-xl group-hover:scale-110 transition-transform">
-                            <i data-lucide="zap" class="w-5 h-5"></i>
-                        </span>
-                        <div>
-                            <p class="font-medium text-xs md:text-sm">Зарядка</p>
-                            <p class="text-[10px] text-slate-400">Питание</p>
-                        </div>
-                    </button>
-                </div>
-
-                <div class="grid grid-cols-1 gap-3">
-                    <button onclick="triggerState('notification')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
-                        <span class="p-2 bg-rose-500/20 text-rose-400 rounded-xl group-hover:scale-110 transition-transform">
-                            <i data-lucide="bell" class="w-5 h-5"></i>
-                        </span>
-                        <div class="flex-1">
-                            <p class="font-medium text-xs md:text-sm">Уведомление</p>
-                            <p class="text-[10px] text-slate-400">Новое сообщение</p>
-                        </div>
-                    </button>
-                    
-                    <button onclick="resetIsland()" class="w-full py-2.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all text-sm font-semibold flex items-center justify-center gap-2">
-                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Сбросить состояние
-                    </button>
-                </div>
+    <!-- ЦЕНТРАЛЬНЫЙ РАБОЧИЙ СТОЛ (Интерактивные виджеты и иконки) -->
+    <div class="flex-1 flex flex-col justify-between px-6 py-6 z-10 overflow-y-auto">
+        
+        <!-- Секция виджетов -->
+        <div class="grid grid-cols-2 gap-4 mt-8">
+            <!-- Виджет часов -->
+            <div class="bg-black/30 backdrop-blur-xl rounded-2xl p-4 border border-white/10 flex flex-col justify-between h-24">
+                <span class="text-[10px] font-semibold text-zinc-400 uppercase tracking-wider">Ваш город</span>
+                <span id="widgetTime" class="text-3xl font-light leading-none">09:41</span>
+                <span class="text-[10px] text-zinc-400">Понедельник, 18 мая</span>
             </div>
-
-            <!-- Дополнительная информация -->
-            <div class="text-xs text-slate-500 flex flex-col gap-1 px-2">
-                <p>💡 Подсказка: Вы также можете нажимать на приложения прямо на экране смартфона, чтобы активировать функции.</p>
-                <p>👉 Попробуйте нажать на сам Dynamic Island, когда он раскрыт, чтобы свернуть его.</p>
+            
+            <!-- Интерактивный плеер на экране -->
+            <div onclick="changeState('music')" class="bg-black/30 backdrop-blur-xl rounded-2xl p-3 border border-white/10 flex flex-col justify-between h-24 cursor-pointer hover:bg-black/40 transition-colors">
+                <div class="flex justify-between items-start">
+                    <span class="text-[10px] font-semibold text-emerald-400 uppercase">Сейчас играет</span>
+                    <i data-lucide="play" class="w-3.5 h-3.5 text-emerald-400"></i>
+                </div>
+                <div class="flex items-center gap-2">
+                    <img src="https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?auto=format&fit=crop&q=80&w=80" class="w-8 h-8 rounded-md object-cover" alt="The Weeknd">
+                    <div class="truncate text-left">
+                        <p class="text-[11px] font-bold truncate">Starboy</p>
+                        <p class="text-[9px] text-zinc-400 truncate">The Weeknd</p>
+                    </div>
+                </div>
             </div>
         </div>
 
-        <!-- Правая колонка: Макет iPhone 14 Pro -->
-        <div class="relative flex items-center justify-center">
-            
-            <!-- Боковые кнопки iPhone (визуальная декорация) -->
-            <div class="absolute -left-1.5 top-28 w-1.5 h-10 bg-zinc-800 rounded-l shadow-md"></div>
-            <div class="absolute -left-1.5 top-44 w-1.5 h-14 bg-zinc-800 rounded-l shadow-md"></div>
-            <div class="absolute -left-1.5 top-64 w-1.5 h-14 bg-zinc-800 rounded-l shadow-md"></div>
-            <div class="absolute -right-1.5 top-44 w-1.5 h-16 bg-zinc-800 rounded-r shadow-md"></div>
-
-            <!-- Корпус телефона -->
-            <div class="relative w-[385px] h-[800px] bg-black rounded-[60px] p-[13px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] border-[5px] border-zinc-800 flex flex-col overflow-hidden select-none">
-                
-                <!-- Защитная рамка / Экран -->
-                <div class="relative w-full h-full rounded-[48px] overflow-hidden bg-cover bg-center flex flex-col justify-between" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800');">
-                    
-                    <!-- Стеклянный градиент-фильтр поверх обоев -->
-                    <div class="absolute inset-0 bg-black/10 backdrop-brightness-95 pointer-events-none"></div>
-
-                    <!-- ПЕРЕДНЯЯ КАМЕРА / DYNAMIC ISLAND -->
-                    <div class="absolute top-3 left-0 right-0 flex justify-center z-50">
-                        <div id="dynamicIsland" onclick="handleIslandClick(event)" class="dynamic-island-transition island-compact bg-black cursor-pointer flex items-center justify-center overflow-hidden text-white shadow-lg shadow-black/40">
-                            
-                            <!-- 1. State: Compact (Обычное состояние) -->
-                            <div id="content-compact" class="flex items-center justify-center w-full h-full">
-                                <!-- Маленькая скрытая линза камеры (визуальный эффект) -->
-                                <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 absolute left-3.5 border border-zinc-950 flex items-center justify-center">
-                                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-950/40"></div>
-                                </div>
-                                <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 absolute right-3.5 border border-zinc-950 flex items-center justify-center">
-                                    <div class="w-1 h-1 rounded-full bg-emerald-950/40"></div>
-                                </div>
-                            </div>
-
-                            <!-- 2. State: Music (Прослушивание музыки) -->
-                            <div id="content-music" class="hidden w-full h-full items-center justify-between px-4">
-                                <div class="flex items-center gap-2">
-                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=100" class="w-6 h-6 rounded-md object-cover border border-white/10" alt="Album Art">
-                                    <div class="flex flex-col text-left">
-                                        <span class="text-[11px] font-bold tracking-tight text-white leading-none truncate w-24">After Hours</span>
-                                        <span class="text-[9px] text-zinc-400 leading-none mt-0.5">The Weeknd</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-1.5">
-                                    <!-- Анимированный эквалайзер -->
-                                    <div class="flex items-end gap-[2px] h-4 w-6">
-                                        <div class="bar"></div>
-                                        <div class="bar"></div>
-                                        <div class="bar"></div>
-                                        <div class="bar"></div>
-                                        <div class="bar"></div>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- 3. State: Incoming Call (Входящий вызов) -->
-                            <div id="content-call" class="hidden w-full h-full items-center justify-between px-4">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-sm shadow-inner text-white">
-                                        ДМ
-                                    </div>
-                                    <div class="flex flex-col text-left">
-                                        <span class="text-[11px] text-zinc-400">Входящий звонок</span>
-                                        <span class="text-sm font-bold leading-tight">Дмитрий Морозов</span>
-                                    </div>
-                                </div>
-                                <div class="flex items-center gap-2">
-                                    <!-- Кнопка сброса -->
-                                    <button onclick="event.stopPropagation(); resetIsland();" class="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-all shadow-md active:scale-95">
-                                        <i data-lucide="phone-off" class="w-4 h-4"></i>
-                                    </button>
-                                    <!-- Кнопка ответа -->
-                                    <button onclick="event.stopPropagation(); acceptCall();" class="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white transition-all shadow-md active:scale-95">
-                                        <i data-lucide="phone" class="w-4 h-4"></i>
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- 4. State: Face ID (Сканирование) -->
-                            <div id="content-faceid" class="hidden w-full h-full flex-col items-center justify-center p-3">
-                                <div class="relative w-12 h-12 flex items-center justify-center text-indigo-400 mb-1">
-                                    <i data-lucide="scan-face" class="w-10 h-10 animate-scan"></i>
-                                </div>
-                                <span class="text-[11px] font-semibold text-zinc-300">Face ID</span>
-                            </div>
-
-                            <!-- 5. State: Charging (Зарядка) -->
-                            <div id="content-charging" class="hidden w-full h-full items-center justify-between px-5">
-                                <div class="flex items-center gap-2">
-                                    <i data-lucide="zap" class="w-4 h-4 text-emerald-400 fill-emerald-400"></i>
-                                    <span class="text-xs font-semibold text-zinc-300">Заряжается</span>
-                                </div>
-                                <span class="text-xs font-bold text-emerald-400" id="chargingPercent">84%</span>
-                            </div>
-
-                            <!-- 6. State: Notification (Новое уведомление) -->
-                            <div id="content-notification" class="hidden w-full h-full flex flex-col justify-between p-3.5 text-left">
-                                <div class="flex items-center justify-between">
-                                    <div class="flex items-center gap-2">
-                                        <div class="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center border border-white/10">
-                                            <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400"></i>
-                                        </div>
-                                        <span class="text-[11px] font-bold text-zinc-400">Telegram</span>
-                                    </div>
-                                    <span class="text-[10px] text-zinc-500">сейчас</span>
-                                </div>
-                                <div class="flex flex-col mt-1">
-                                    <span class="text-[12px] font-bold text-white leading-tight">Алексей Смирнов</span>
-                                    <p class="text-[11px] text-zinc-300 truncate mt-0.5">Привет! Всё готово к презентации, ждем тебя в офисе через 15 минут.</p>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- ВЕРХНЯЯ СТАТУС-ПАНЕЛЬ -->
-                    <div class="pt-3 px-8 flex justify-between items-center text-xs font-semibold z-40 text-white select-none pointer-events-none">
-                        <!-- Время (слева от челки) -->
-                        <span id="statusBarTime" class="tracking-tight">09:41</span>
-                        
-                        <!-- Статус связи, Wi-Fi, Батарея (справа от челки) -->
-                        <div class="flex items-center gap-1.5">
-                            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
-                            <span class="text-[10px]">5G</span>
-                            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
-                            <div class="flex items-center gap-0.5 border border-white/40 rounded-sm px-0.5 py-px text-[9px] leading-none">
-                                <span id="statusBarBattery">84</span>
-                                <i data-lucide="battery" class="w-3 h-3 text-white"></i>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- ОСНОВНОЙ ЭКРАН С ПРИЛОЖЕНИЯМИ -->
-                    <div class="flex-1 flex flex-col justify-between px-6 pt-12 pb-6 z-30">
-                        
-                        <!-- Карусель виджетов -->
-                        <div class="grid grid-cols-2 gap-3 mt-4">
-                            <!-- Календарь -->
-                            <div class="bg-black/40 backdrop-blur-md rounded-2xl p-3 border border-white/5 flex flex-col justify-between h-20">
-                                <span class="text-[10px] font-semibold text-rose-500 uppercase">Понедельник</span>
-                                <span class="text-2xl font-bold leading-none -mt-1">18</span>
-                                <span class="text-[10px] text-zinc-300">Планы отсутствуют</span>
-                            </div>
-                            <!-- Погода -->
-                            <div class="bg-black/40 backdrop-blur-md rounded-2xl p-3 border border-white/5 flex flex-col justify-between h-20">
-                                <div class="flex justify-between items-start">
-                                    <span class="text-[10px] text-zinc-300 font-medium">Москва</span>
-                                    <i data-lucide="sun-dim" class="w-4 h-4 text-amber-400"></i>
-                                </div>
-                                <div>
-                                    <span class="text-xl font-bold leading-none">+21°</span>
-                                    <p class="text-[9px] text-zinc-300 truncate">Ясно, без осадков</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Сетка приложений (Интерактивные) -->
-                        <div class="grid grid-cols-4 gap-y-4 gap-x-2 my-auto">
-                            <!-- Музыка (Триггер) -->
-                            <button onclick="triggerState('music')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
-                                    <i data-lucide="music" class="w-6 h-6 text-white"></i>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Музыка</span>
-                            </button>
-
-                            <!-- Телефон (Триггер) -->
-                            <button onclick="triggerState('call')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
-                                    <i data-lucide="phone" class="w-6 h-6 text-white"></i>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Телефон</span>
-                            </button>
-
-                            <!-- Face ID (Триггер) -->
-                            <button onclick="triggerState('faceid')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
-                                    <i data-lucide="scan-face" class="w-6 h-6 text-white"></i>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Face ID</span>
-                            </button>
-
-                            <!-- Зарядка (Триггер) -->
-                            <button onclick="triggerState('charging')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
-                                    <i data-lucide="battery-charging" class="w-6 h-6 text-white"></i>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Питание</span>
-                            </button>
-
-                            <!-- Сообщения (Триггер) -->
-                            <button onclick="triggerState('notification')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
-                                <div class="relative w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-sky-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
-                                    <i data-lucide="message-square" class="w-6 h-6 text-white"></i>
-                                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full text-[9px] font-bold flex items-center justify-center text-white">1</span>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Чат</span>
-                            </button>
-
-                            <!-- Фото (Статичное приложение) -->
-                            <div class="flex flex-col items-center gap-1.5 group">
-                                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg border border-white/10 overflow-hidden">
-                                    <div class="grid grid-cols-2 w-full h-full p-1 gap-0.5">
-                                        <div class="bg-indigo-400 rounded-sm"></div>
-                                        <div class="bg-amber-400 rounded-sm"></div>
-                                        <div class="bg-rose-400 rounded-sm"></div>
-                                        <div class="bg-emerald-400 rounded-sm"></div>
-                                    </div>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Фото</span>
-                            </div>
-
-                            <!-- Настройки -->
-                            <div class="flex flex-col items-center gap-1.5 group">
-                                <div class="w-12 h-12 rounded-xl bg-slate-600 flex items-center justify-center shadow-lg border border-white/10">
-                                    <i data-lucide="settings" class="w-6 h-6 text-zinc-300"></i>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Настройки</span>
-                            </div>
-
-                            <!-- Камера -->
-                            <div class="flex flex-col items-center gap-1.5 group">
-                                <div class="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center shadow-lg border border-white/10">
-                                    <i data-lucide="camera" class="w-6 h-6 text-zinc-400"></i>
-                                </div>
-                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Камера</span>
-                            </div>
-                        </div>
-
-                        <!-- Нижний Док-бар (Dock) -->
-                        <div class="bg-white/15 backdrop-blur-xl border border-white/10 rounded-[28px] p-2.5 flex justify-around items-center">
-                            <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-800 flex items-center justify-center shadow-md">
-                                <i data-lucide="globe" class="w-5 h-5 text-white"></i>
-                            </div>
-                            <div class="w-11 h-11 rounded-xl bg-zinc-900 flex items-center justify-center shadow-md">
-                                <i data-lucide="mail" class="w-5 h-5 text-white"></i>
-                            </div>
-                            <div class="w-11 h-11 rounded-xl bg-emerald-500 flex items-center justify-center shadow-md" onclick="triggerState('call')">
-                                <i data-lucide="phone" class="w-5 h-5 text-white"></i>
-                            </div>
-                            <div class="w-11 h-11 rounded-xl bg-rose-500 flex items-center justify-center shadow-md" onclick="triggerState('music')">
-                                <i data-lucide="music" class="w-5 h-5 text-white"></i>
-                            </div>
-                        </div>
-
-                    </div>
-
-                    <!-- ИНДИКАТОР ДОМОЙ (HOME BAR) -->
-                    <div class="absolute bottom-1.5 left-0 right-0 flex justify-center z-50">
-                        <div class="w-32 h-1 bg-white/70 rounded-full"></div>
-                    </div>
-
+        <!-- Сетка иконок -->
+        <div class="grid grid-cols-4 gap-y-6 gap-x-3 my-auto pt-4 max-w-sm mx-auto w-full">
+            <!-- Музыка -->
+            <button onclick="changeState('music')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-rose-500 to-pink-600 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-white/10">
+                    <i data-lucide="music" class="w-7 h-7 text-white"></i>
                 </div>
+                <span class="text-[10px] font-medium text-white/80">Музыка</span>
+            </button>
+
+            <!-- Звонок -->
+            <button onclick="changeState('call')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-emerald-500 to-green-600 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-white/10">
+                    <i data-lucide="phone" class="w-7 h-7 text-white"></i>
+                </div>
+                <span class="text-[10px] font-medium text-white/80">Телефон</span>
+            </button>
+
+            <!-- FaceID -->
+            <button onclick="changeState('faceid')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-white/10">
+                    <i data-lucide="scan-face" class="w-7 h-7 text-white"></i>
+                </div>
+                <span class="text-[10px] font-medium text-white/80">Face ID</span>
+            </button>
+
+            <!-- Зарядка -->
+            <button onclick="changeState('charging')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-white/10">
+                    <i data-lucide="battery-charging" class="w-7 h-7 text-white"></i>
+                </div>
+                <span class="text-[10px] font-medium text-white/80">Питание</span>
+            </button>
+
+            <!-- Чат -->
+            <button onclick="changeState('notification')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="relative w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-400 to-blue-500 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-white/10">
+                    <i data-lucide="message-square" class="w-7 h-7 text-white"></i>
+                    <span class="absolute -top-1 -right-1 w-5 h-5 bg-rose-500 rounded-full text-xs font-bold flex items-center justify-center text-white border border-slate-900">1</span>
+                </div>
+                <span class="text-[10px] font-medium text-white/80">Telegram</span>
+            </button>
+
+            <!-- Камера (Эмулирует щелчок затвора) -->
+            <button onclick="showToast('Затвор камеры сработал 📸')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="w-14 h-14 rounded-2xl bg-zinc-800 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-white/10">
+                    <i data-lucide="camera" class="w-7 h-7 text-zinc-300"></i>
+                </div>
+                <span class="text-[10px] font-medium text-white/80">Камера</span>
+            </button>
+
+            <!-- Погода -->
+            <button onclick="showToast('В Москве сейчас солнечно, +21°C')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="w-14 h-14 rounded-2xl bg-gradient-to-tr from-sky-300 to-blue-400 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-white/10">
+                    <i data-lucide="sun" class="w-7 h-7 text-white"></i>
+                </div>
+                <span class="text-[10px] font-medium text-white/80">Погода</span>
+            </button>
+
+            <!-- Кнопка вызова настроек калибровки -->
+            <button onclick="toggleCalibrationPanel()" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                <div class="w-14 h-14 rounded-2xl bg-slate-700/80 flex items-center justify-center shadow-lg group-active:scale-90 transition-transform border border-amber-500/30">
+                    <i data-lucide="sliders" class="w-7 h-7 text-amber-400"></i>
+                </div>
+                <span class="text-[10px] font-semibold text-amber-400">Калибровка</span>
+            </button>
+        </div>
+
+        <!-- Нижний док приложений (Док-станция) -->
+        <div class="bg-white/10 backdrop-blur-2xl border border-white/10 rounded-[28px] p-3 flex justify-around items-center max-w-sm mx-auto w-full">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-800 flex items-center justify-center shadow-md">
+                <i data-lucide="globe" class="w-5.5 h-5.5 text-white"></i>
+            </div>
+            <div class="w-12 h-12 rounded-xl bg-zinc-900 flex items-center justify-center shadow-md">
+                <i data-lucide="mail" class="w-5.5 h-5.5 text-white"></i>
+            </div>
+            <div onclick="changeState('call')" class="w-12 h-12 rounded-xl bg-emerald-500 flex items-center justify-center shadow-md cursor-pointer">
+                <i data-lucide="phone" class="w-5.5 h-5.5 text-white"></i>
+            </div>
+            <div onclick="changeState('music')" class="w-12 h-12 rounded-xl bg-rose-500 flex items-center justify-center shadow-md cursor-pointer">
+                <i data-lucide="music" class="w-5.5 h-5.5 text-white"></i>
             </div>
         </div>
 
     </div>
 
-    <!-- Системные уведомления (Внутриэкранные логирования действий) -->
-    <div id="toast" class="fixed bottom-6 bg-slate-950/90 text-slate-200 px-4 py-2 rounded-full border border-white/10 text-xs tracking-wide shadow-xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 transform translate-y-2 flex items-center gap-2">
+    <!-- Системный нижний индикатор "Домой" -->
+    <div class="w-full pb-1.5 flex justify-center z-10 pointer-events-none">
+        <div class="w-36 h-1.5 bg-white/40 rounded-full"></div>
+    </div>
+
+
+    <!-- 2. ПАНЕЛЬ КАЛИБРОВКИ (Всплывающая снизу плашка) -->
+    <div id="calibrationPanel" class="fixed bottom-0 left-0 right-0 bg-zinc-950/95 border-t border-white/10 rounded-t-[32px] p-6 shadow-2xl transition-transform duration-500 transform translate-y-full z-50">
+        
+        <!-- Верхняя кнопка-шторка закрытия -->
+        <div onclick="toggleCalibrationPanel()" class="w-12 h-1.5 bg-zinc-800 rounded-full mx-auto mb-5 cursor-pointer hover:bg-zinc-700 transition-colors"></div>
+
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-base font-bold text-amber-400 flex items-center gap-2">
+                <i data-lucide="settings-2" class="w-5 h-5"></i> Настройка под вашу челку
+            </h2>
+            <button onclick="toggleCalibrationPanel()" class="text-xs text-zinc-400 hover:text-white bg-zinc-850 px-3 py-1.5 rounded-xl border border-white/5">
+                Готово
+            </button>
+        </div>
+
+        <p class="text-[11px] text-zinc-400 mb-6 leading-relaxed">
+            Двигайте ползунки, чтобы совместить темный элемент нашего Dynamic Island с вашей реальной физической камерой или монобровью телефона.
+        </p>
+
+        <div class="space-y-4">
+            <!-- Сдвиг по вертикали (Y) -->
+            <div>
+                <div class="flex justify-between text-xs text-zinc-300 mb-1">
+                    <span>Сдвиг вниз (Y):</span>
+                    <span id="label-y" class="font-bold text-amber-400">12px</span>
+                </div>
+                <input type="range" id="input-y" min="0" max="60" value="12" oninput="updateNotchStyle('y', this.value)" class="w-full accent-amber-400 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Масштаб по ширине (X) -->
+            <div>
+                <div class="flex justify-between text-xs text-zinc-300 mb-1">
+                    <span>Ширина челки (X):</span>
+                    <span id="label-x" class="font-bold text-amber-400">1.0x</span>
+                </div>
+                <input type="range" id="input-x" min="0.6" max="2.5" step="0.05" value="1.0" oninput="updateNotchStyle('x', this.value)" class="w-full accent-amber-400 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Масштаб по высоте (Y) -->
+            <div>
+                <div class="flex justify-between text-xs text-zinc-300 mb-1">
+                    <span>Высота челки (Y):</span>
+                    <span id="label-h" class="font-bold text-amber-400">1.0x</span>
+                </div>
+                <input type="range" id="input-h" min="0.6" max="2.0" step="0.05" value="1.0" oninput="updateNotchStyle('h', this.value)" class="w-full accent-amber-400 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer">
+            </div>
+
+            <!-- Скругление углов -->
+            <div>
+                <div class="flex justify-between text-xs text-zinc-300 mb-1">
+                    <span>Скругление углов:</span>
+                    <span id="label-r" class="font-bold text-amber-400">9999px</span>
+                </div>
+                <input type="range" id="input-r" min="0" max="40" value="40" oninput="updateNotchStyle('r', this.value)" class="w-full accent-amber-400 h-1 bg-zinc-800 rounded-lg appearance-none cursor-pointer">
+            </div>
+        </div>
+
+        <div class="mt-5 grid grid-cols-2 gap-3">
+            <button onclick="resetNotchSettings()" class="py-2 rounded-xl bg-zinc-900 border border-white/5 text-xs text-zinc-300 hover:text-white">
+                Сбросить
+            </button>
+            <button onclick="toggleCalibrationPanel()" class="py-2 rounded-xl bg-amber-500 hover:bg-amber-600 text-xs font-bold text-black transition-colors">
+                Сохранить калибровку
+            </button>
+        </div>
+    </div>
+
+
+    <!-- ВСПЛЫВАЮЩИЕ УВЕДОМЛЕНИЯ -->
+    <div id="toast" class="fixed bottom-32 left-1/2 -translate-x-1/2 bg-slate-950/90 text-slate-200 px-5 py-2.5 rounded-full border border-white/10 text-xs tracking-wide shadow-2xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 transform translate-y-2 flex items-center gap-2 z-40">
         <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400"></i>
         <span id="toastMessage">Оповещение системы</span>
     </div>
 
+
     <script>
-        // Инициализация иконок
+        // Инициализация иконок Lucide
         lucide.createIcons();
 
         // Переменные состояния
-        let currentState = 'compact';
-        let isPowerCharging = false;
-        let batteryLevel = 84;
+        let currentIslandState = 'compact';
+        let isCalibrationOpen = false;
 
-        // Элементы DOM
-        const island = document.getElementById('dynamicIsland');
-        const contents = {
-            compact: document.getElementById('content-compact'),
-            music: document.getElementById('content-music'),
-            call: document.getElementById('content-call'),
-            faceid: document.getElementById('content-faceid'),
-            charging: document.getElementById('content-charging'),
-            notification: document.getElementById('content-notification')
+        // Элементы
+        const realIsland = document.getElementById('realDynamicIsland');
+        const views = {
+            compact: document.getElementById('view-compact'),
+            music: document.getElementById('view-music'),
+            call: document.getElementById('view-call'),
+            faceid: document.getElementById('view-faceid'),
+            charging: document.getElementById('view-charging'),
+            notification: document.getElementById('view-notification')
         };
 
-        // Живые часы на статус-баре
-        function updateTime() {
+        // Живые часы на экране и статус-баре
+        function updateClocks() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            document.getElementById('statusBarTime').textContent = `${hours}:${minutes}`;
+            
+            document.getElementById('liveTime').textContent = `${hours}:${minutes}`;
+            document.getElementById('widgetTime').textContent = `${hours}:${minutes}`;
         }
-        setInterval(updateTime, 1000);
-        updateTime();
+        setInterval(updateClocks, 1000);
+        updateClocks();
 
-        // Смена состояния Dynamic Island
-        function triggerState(state) {
-            if (currentState === state) {
-                // Если повторно нажимаем на ту же кнопку - сворачиваем
-                resetIsland();
+        // Управление состояниями
+        function changeState(state) {
+            if (currentIslandState === state) {
+                // Повторное нажатие сворачивает в компактную челку
+                resetToCompact();
                 return;
             }
 
-            // Убираем старые классы состояния
-            island.classList.remove('island-compact', 'island-music', 'island-call', 'island-faceid', 'island-charging', 'island-notification');
+            // Очищаем старые классы состояния
+            realIsland.classList.remove('state-compact', 'state-music', 'state-call', 'state-faceid', 'state-charging', 'state-notification');
             
-            // Скрываем весь контент
-            Object.values(contents).forEach(el => {
-                el.classList.add('hidden');
-                el.classList.remove('flex');
+            // Скрываем все шаблоны контента
+            Object.values(views).forEach(v => {
+                v.classList.add('hidden');
+                v.classList.remove('flex');
             });
 
-            // Задаем новое состояние
-            currentState = state;
+            currentIslandState = state;
             
-            // Применяем размеры
-            island.classList.add(`island-${state}`);
+            // Назначаем новый размер
+            realIsland.classList.add(`state-${state}`);
 
-            // Показываем нужный контент после небольшой задержки для сглаживания анимации
+            // Отображаем контент под новое состояние с задержкой, чтобы выглядело органично
             setTimeout(() => {
                 if (state === 'compact') {
-                    contents[state].classList.add('flex');
-                } else if (state === 'faceid') {
-                    contents[state].classList.add('flex');
+                    views.compact.classList.add('flex');
                 } else if (state === 'notification') {
-                    contents[state].classList.remove('hidden'); // Не флекс для кастомной сетки
+                    views.notification.classList.remove('hidden');
                 } else {
-                    contents[state].classList.remove('hidden');
-                    contents[state].classList.add('flex');
+                    views[state].classList.remove('hidden');
+                    views[state].classList.add('flex');
                 }
-            }, 100);
+            }, 120);
 
-            // Обработка особых условий
-            if (state === 'charging') {
-                if (!isPowerCharging) {
-                    isPowerCharging = true;
-                    batteryLevel = Math.min(100, batteryLevel + 1);
-                    document.getElementById('statusBarBattery').textContent = batteryLevel;
-                    document.getElementById('chargingPercent').textContent = `${batteryLevel}%`;
-                }
-                showToast('Зарядное устройство подключено');
-            } else if (state === 'faceid') {
-                showToast('Сканирование лица Face ID...');
-                // Автоматическое сворачивание Face ID через 3 секунды
+            // Обработка логики триггеров
+            if (state === 'faceid') {
+                showToast('Поднесите лицо к экрану для Face ID...');
                 setTimeout(() => {
-                    if (currentState === 'faceid') {
-                        showToast('Успешно разблокировано!');
-                        resetIsland();
+                    if (currentIslandState === 'faceid') {
+                        showToast('Успешная разблокировка! ✅');
+                        resetToCompact();
                     }
                 }, 3000);
-            } else if (state === 'music') {
-                showToast('Сейчас играет: The Weeknd - After Hours');
-            } else if (state === 'call') {
-                showToast('Входящий вызов от: Дмитрий Морозов');
-            } else if (state === 'notification') {
-                showToast('Новое уведомление от Telegram');
             }
         }
 
-        // Сбросить до компактного состояния
-        function resetIsland() {
-            island.classList.remove('island-music', 'island-call', 'island-faceid', 'island-charging', 'island-notification');
-            island.classList.add('island-compact');
+        function resetToCompact() {
+            realIsland.classList.remove('state-music', 'state-call', 'state-faceid', 'state-charging', 'state-notification');
+            realIsland.classList.add('state-compact');
             
-            Object.values(contents).forEach(el => {
-                el.classList.add('hidden');
-                el.classList.remove('flex');
+            Object.values(views).forEach(v => {
+                v.classList.add('hidden');
+                v.classList.remove('flex');
             });
-            contents.compact.classList.add('flex');
-            currentState = 'compact';
+            views.compact.classList.add('flex');
+            currentIslandState = 'compact';
         }
 
-        // Клик по самому острову (если он развернут - сворачивает)
-        function handleIslandClick(event) {
-            // Если мы нажали на кнопки внутри острова, то не сворачиваем
+        // Клик по самому элементу Dynamic Island
+        function handleIslandTap(event) {
             if (event.target.closest('button')) return;
 
-            if (currentState !== 'compact') {
-                resetIsland();
-                showToast('Остров свернут');
+            if (currentIslandState !== 'compact') {
+                resetToCompact();
             } else {
-                // Если кликнули на компактный - активируем фичу Face ID
-                triggerState('faceid');
+                // Если кликнули на компактную челку - показываем FaceID
+                changeState('faceid');
             }
         }
 
-        // Принять вызов
-        function acceptCall() {
-            showToast('Звонок принят. Подключение...');
-            resetIsland();
+        // Показать / Скрыть панель калибровки
+        function toggleCalibrationPanel() {
+            const panel = document.getElementById('calibrationPanel');
+            isCalibrationOpen = !isCalibrationOpen;
+            
+            if (isCalibrationOpen) {
+                panel.classList.remove('translate-y-full');
+                showToast('Режим калибровки челки активен');
+            } else {
+                panel.classList.add('translate-y-full');
+            }
         }
 
-        // Показ тостов (системных логов)
+        // Логика калибровки челки под реальный экран
+        function updateNotchStyle(type, value) {
+            const root = document.documentElement;
+            
+            if (type === 'y') {
+                root.style.setProperty('--notch-offset-y', `${value}px`);
+                document.getElementById('label-y').textContent = `${value}px`;
+            } else if (type === 'x') {
+                root.style.setProperty('--notch-scale-x', value);
+                document.getElementById('label-x').textContent = `${value}x`;
+            } else if (type === 'h') {
+                root.style.setProperty('--notch-scale-y', value);
+                document.getElementById('label-h').textContent = `${value}x`;
+            } else if (type === 'r') {
+                // Если ползунок на максимуме, ставим круглую форму pill
+                const radiusVal = value == 40 ? '9999px' : `${value}px`;
+                root.style.setProperty('--notch-radius', radiusVal);
+                document.getElementById('label-r').textContent = radiusVal;
+            }
+        }
+
+        // Сбросить калибровку до стандартов iPhone 14 Pro
+        function resetNotchSettings() {
+            const root = document.documentElement;
+            root.style.setProperty('--notch-offset-y', '12px');
+            root.style.setProperty('--notch-scale-x', '1.0');
+            root.style.setProperty('--notch-scale-y', '1.0');
+            root.style.setProperty('--notch-radius', '9999px');
+
+            document.getElementById('input-y').value = 12;
+            document.getElementById('input-x').value = 1.0;
+            document.getElementById('input-h').value = 1.0;
+            document.getElementById('input-r').value = 40;
+
+            document.getElementById('label-y').textContent = '12px';
+            document.getElementById('label-x').textContent = '1.0x';
+            document.getElementById('label-h').textContent = '1.0x';
+            document.getElementById('label-r').textContent = '9999px';
+
+            showToast('Настройки калибровки сброшены');
+        }
+
+        // Показ системных тостов
         let toastTimeout;
         function showToast(message) {
             const toast = document.getElementById('toast');
