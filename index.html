@@ -1,2275 +1,596 @@
-```html
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CS2 Mobile Case Simulator: iOS 26 & Premium VIP</title>
-    <!-- Tailwind CSS -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>iPhone 14 Pro Dynamic Island Simulator</title>
+    <!-- Tailwind CSS для стилей -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Rajdhani:wght@500;600;700&family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Firebase SDK (v11.6.1) -->
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore-compat.js"></script>
-
+    <!-- Подключаем иконки Lucide для интерфейса -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        :root {
-            --ios-font: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            --cs-font: 'Roboto', sans-serif;
-            --premium-color: #a855f7;
-            --vip-color: #e4ae39;
-        }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
         body {
-            font-family: var(--cs-font);
-            background-color: #0b0e14;
-            color: #e2e8f0;
-            user-select: none;
-            -webkit-user-select: none;
-            -webkit-tap-highlight-color: transparent;
-            transition: background-color 0.4s ease, font-family 0.4s ease;
-        }
-        .header-font {
-            font-family: 'Rajdhani', sans-serif;
-        }
-        
-        /* Custom scrollbar */
-        ::-webkit-scrollbar {
-            width: 4px;
-            height: 4px;
-        }
-        ::-webkit-scrollbar-track {
-            background: #0f172a;
-        }
-        ::-webkit-scrollbar-thumb {
-            background: #334155;
-            border-radius: 2px;
-        }
-        
-        /* Rarity colors and glow styles */
-        .rarity-common { border-color: #4b69ff; background: radial-gradient(circle at center, rgba(75, 105, 255, 0.15) 0%, transparent 70%); }
-        .rarity-uncommon { border-color: #8847ff; background: radial-gradient(circle at center, rgba(136, 71, 255, 0.15) 0%, transparent 70%); }
-        .rarity-rare { border-color: #d32ce6; background: radial-gradient(circle at center, rgba(211, 44, 230, 0.15) 0%, transparent 70%); }
-        .rarity-classified { border-color: #eb4b4b; background: radial-gradient(circle at center, rgba(235, 75, 75, 0.15) 0%, transparent 70%); }
-        .rarity-covert { border-color: #e4ae39; background: radial-gradient(circle at center, rgba(228, 174, 57, 0.2) 0%, transparent 70%); }
-        .rarity-godlike { border-color: #ff3e3e; background: radial-gradient(circle at center, rgba(255, 62, 62, 0.3) 0%, transparent 70%); box-shadow: 0 0 15px rgba(255, 62, 62, 0.2); }
-
-        /* Roulette spin container */
-        .roulette-container {
-            position: relative;
-            overflow: hidden;
-            width: 100%;
-            height: 130px;
-            background: #0d1117;
-            border: 2px solid #1f2937;
-            transition: border-radius 0.3s ease, border-color 0.3s ease;
-        }
-        .roulette-track {
-            display: flex;
-            position: absolute;
-            left: 0;
-            top: 0;
-            height: 100%;
-            will-change: transform;
-        }
-        .roulette-pointer {
-            position: absolute;
-            left: 50%;
-            top: 0;
-            bottom: 0;
-            width: 4px;
-            background-color: #e4ae39;
-            box-shadow: 0 0 12px #e4ae39;
-            transform: translateX(-50%);
-            z-index: 10;
-        }
-        .roulette-pointer::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-top: 8px solid #e4ae39;
-        }
-        .roulette-pointer::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            border-left: 8px solid transparent;
-            border-right: 8px solid transparent;
-            border-bottom: 8px solid #e4ae39;
+            font-family: 'Inter', sans-serif;
+            background: radial-gradient(circle at center, #1e1e2e 0%, #0f0f16 100%);
         }
 
-        /* Gold Card VIP animation */
-        @keyframes vip-shimmer {
-            0% { background-position: -200% 0; }
-            100% { background-position: 200% 0; }
-        }
-        .vip-gold-card {
-            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
-            background-size: 200% auto;
-            animation: vip-shimmer 4s linear infinite;
+        /* Плавные переходы для Dynamic Island с пружинным эффектом */
+        .dynamic-island-transition {
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.15);
         }
 
-        /* Premium VIP Purple Diamond card */
-        @keyframes premium-shimmer {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
-        }
-        .vip-premium-card {
-            background: linear-gradient(45deg, #2e0854, #6b21a8, #3b0764, #9333ea, #1e1b4b);
-            background-size: 400% 400%;
-            animation: premium-shimmer 8s ease infinite;
-        }
-
-        /* Dynamic Island Camera Notch Style */
-        .dynamic-island {
+        /* Различные состояния Dynamic Island */
+        .island-compact {
             width: 110px;
             height: 30px;
-            background-color: #000000;
-            border-radius: 20px;
-            transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            overflow: hidden;
-            pointer-events: auto;
-            border: 0.5px solid rgba(255, 255, 255, 0.1);
-        }
-        .dynamic-island.expanded {
-            width: 92%;
-            height: 64px;
-            border-radius: 24px;
-            background-color: rgba(10, 10, 10, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255, 255, 255, 0.15);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border-radius: 9999px;
         }
 
-        /* ================= iOS 26 Theme overrides ================= */
-        .ios-mode {
-            font-family: var(--ios-font) !important;
-            background-color: #000000 !important;
-        }
-        .ios-mode .header-font {
-            font-family: var(--ios-font) !important;
-        }
-        .ios-mode header {
-            background-color: rgba(15, 15, 15, 0.7) !important;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-bottom: 0.5px solid rgba(255, 255, 255, 0.12) !important;
-        }
-        .ios-mode nav {
-            background-color: rgba(15, 15, 15, 0.75) !important;
-            backdrop-filter: blur(25px);
-            -webkit-backdrop-filter: blur(25px);
-            border-top: 0.5px solid rgba(255, 255, 255, 0.12) !important;
-            padding-bottom: 14px;
-            height: 78px !important;
-        }
-        .ios-mode .rounded-xl, .ios-mode .rounded-2xl {
-            border-radius: 24px !important; /* Perfect Apple Squircle */
-        }
-        .ios-mode .bg-gray-900, .ios-mode .bg-gray-900\/50, .ios-mode .bg-gray-900\/80 {
-            background-color: rgba(22, 22, 24, 0.8) !important;
-            backdrop-filter: blur(15px);
-            -webkit-backdrop-filter: blur(15px);
-            border-color: rgba(255, 255, 255, 0.08) !important;
-        }
-        .ios-mode .roulette-container {
-            border-radius: 20px !important;
-            border: 0.5px solid rgba(255, 255, 255, 0.15) !important;
-            background: #18181a !important;
-        }
-        .ios-mode button {
-            transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1);
-            border-radius: 16px !important;
-        }
-        .ios-mode button:active {
-            transform: scale(0.96) !important;
-            opacity: 0.85;
+        .island-music {
+            width: 320px;
+            height: 44px;
+            border-radius: 9999px;
         }
 
-        /* iOS 26 Home indicator line */
-        .ios-home-indicator {
-            display: none;
-            position: absolute;
-            bottom: 5px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 140px;
-            height: 5px;
-            background-color: rgba(255, 255, 255, 0.4);
-            border-radius: 10px;
-            z-index: 50;
-            pointer-events: none;
-        }
-        .ios-mode .ios-home-indicator {
-            display: block;
+        .island-call {
+            width: 340px;
+            height: 75px;
+            border-radius: 35px;
         }
 
-        /* Active navigation glow */
-        .nav-active-glow {
-            text-shadow: 0 0 10px currentColor;
+        .island-faceid {
+            width: 130px;
+            height: 130px;
+            border-radius: 35px;
+        }
+
+        .island-charging {
+            width: 240px;
+            height: 40px;
+            border-radius: 9999px;
+        }
+
+        .island-notification {
+            width: 340px;
+            height: 90px;
+            border-radius: 32px;
+        }
+
+        /* Анимация пульсации для Face ID */
+        @keyframes scan {
+            0%, 100% { opacity: 0.3; transform: scale(0.95); }
+            50% { opacity: 1; transform: scale(1.05); }
+        }
+        .animate-scan {
+            animation: scan 2s infinite ease-in-out;
+        }
+
+        /* Анимация музыкального эквалайзера */
+        .bar {
+            width: 3px;
+            background-color: #10b981;
+            animation: bounce 0.8s infinite ease-in-out alternate;
+        }
+        .bar:nth-child(2) { animation-delay: 0.15s; }
+        .bar:nth-child(3) { animation-delay: 0.3s; }
+        .bar:nth-child(4) { animation-delay: 0.45s; }
+        .bar:nth-child(5) { animation-delay: 0.2s; }
+
+        @keyframes bounce {
+            10% { height: 4px; }
+            100% { height: 16px; }
+        }
+
+        /* Стилизация скроллбара */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 3px;
         }
     </style>
 </head>
-<body class="flex flex-col h-screen max-w-md mx-auto shadow-2xl border-x border-gray-800 relative overflow-hidden">
+<body class="min-h-screen text-white flex flex-col items-center justify-center p-4 overflow-x-hidden">
 
-    <!-- DYNAMIC ISLAND (Notch simulation / Notification Center) -->
-    <div class="absolute top-2 left-0 right-0 z-50 flex justify-center pointer-events-none">
-        <div id="dynamic-island" class="dynamic-island" onclick="dismissDynamicIsland()">
-            <!-- Default Camera Notch Inside -->
-            <div id="island-compact" class="flex items-center space-x-1.5 transition-opacity duration-300">
-                <div class="w-2.5 h-2.5 rounded-full bg-[#1a1a1a] border border-gray-800"></div>
-                <div class="w-1.5 h-1.5 rounded-full bg-[#121212]"></div>
+    <div class="w-full max-w-6xl flex flex-col lg:flex-row items-center justify-center gap-12 z-10">
+        
+        <!-- Левая колонка: Описание и пульт управления -->
+        <div class="w-full lg:w-1/2 flex flex-col space-y-6 max-w-md">
+            <div>
+                <span class="bg-indigo-600/30 text-indigo-400 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider">Интерактивный концепт</span>
+                <h1 class="text-3xl md:text-4xl font-extrabold mt-2 tracking-tight bg-gradient-to-r from-white via-slate-200 to-indigo-300 bg-clip-text text-transparent">
+                    Dynamic Island OS
+                </h1>
+                <p class="text-slate-400 mt-2 text-sm leading-relaxed">
+                    Почувствуйте магию интерактивной «чёлки» iPhone 14 Pro на веб-технологиях. Нажимайте на приложения внутри симулятора или используйте кнопки быстрого запуска ниже.
+                </p>
             </div>
-            <!-- Expanded Status Screen -->
-            <div id="island-expanded" class="hidden w-full px-4 flex items-center justify-between opacity-0 transition-opacity duration-300">
-                <div class="flex items-center space-x-3 text-left">
-                    <div id="island-icon-bg" class="w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md text-sm">
-                        <i id="island-icon" class="fa-solid fa-bell"></i>
-                    </div>
-                    <div>
-                        <span id="island-title" class="text-[10px] font-bold text-gray-400 uppercase tracking-wider block">Уведомление</span>
-                        <span id="island-message" class="text-xs font-semibold text-white truncate max-w-[200px] block">Текст сообщения</span>
-                    </div>
-                </div>
-                <div class="text-[9px] text-gray-500 font-light whitespace-nowrap">нажмите, чтобы скрыть</div>
-            </div>
-        </div>
-    </div>
 
-    <!-- TOP HEADER -->
-    <header class="bg-gray-900 border-b border-gray-800 p-4 pt-10 flex justify-between items-center shrink-0 z-30 transition-colors">
-        <div class="flex items-center space-x-2">
-            <div class="bg-yellow-500/10 border border-yellow-500/30 rounded-xl px-2.5 py-1 flex items-center shadow-lg">
-                <i class="fa-solid fa-wallet text-yellow-500 mr-1.5 text-xs"></i>
-                <span id="balance-val" class="header-font font-bold text-yellow-500 text-lg">$250.00</span>
+            <!-- Пульт управления -->
+            <div class="bg-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-md shadow-2xl space-y-4">
+                <h2 class="text-sm font-semibold uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                    <i data-lucide="sliders" class="w-4 h-4 text-indigo-400"></i> Панель управления
+                </h2>
                 
-                <!-- VIP Badge -->
-                <span id="header-vip-tag" class="hidden ml-1.5 bg-gradient-to-r from-yellow-500 to-amber-600 text-black text-[9px] font-extrabold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-sm">
-                    <i class="fa-solid fa-crown text-[8px]"></i>VIP
-                </span>
-                <!-- Premium VIP Badge -->
-                <span id="header-premium-tag" class="hidden ml-1.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-[9px] font-extrabold px-1.5 py-0.5 rounded-md flex items-center gap-0.5 shadow-[0_0_10px_rgba(147,51,234,0.5)]">
-                    <i class="fa-solid fa-gem text-[8px]"></i>PREMIUM
-                </span>
-            </div>
-            <button onclick="addFreeCash()" class="bg-emerald-600 hover:bg-emerald-500 active:scale-95 text-white rounded-xl p-1.5 text-xs font-semibold flex items-center justify-center transition-all shadow-md" title="Получить бесплатно">
-                <i class="fa-solid fa-plus mr-0.5"></i> <span id="clicker-bonus-text">$50</span>
-            </button>
-        </div>
-        
-        <div class="flex items-center space-x-3">
-            <div class="text-right">
-                <span class="text-[10px] text-gray-400 block uppercase tracking-wider">Инвентарь</span>
-                <span id="inv-worth" class="header-font text-sm font-semibold text-gray-200">$0.00</span>
-            </div>
-            <button onclick="openSettings()" class="text-gray-400 hover:text-white p-1.5 bg-gray-800/40 rounded-lg transition" title="Настройки">
-                <i class="fa-solid fa-gear text-md"></i>
-            </button>
-        </div>
-    </header>
-
-    <!-- TOAST NOTIFICATION CONTAINER (Used for fallback if dynamic island is not active) -->
-    <div id="toast-container" class="absolute top-24 left-4 right-4 z-40 pointer-events-none flex flex-col gap-2"></div>
-
-    <!-- MAIN APP SCREEN CONTAINER -->
-    <main class="flex-1 overflow-y-auto p-4 pb-24 bg-gradient-to-b from-[#0e131d] to-[#070a0e] transition-all">
-        
-        <!-- PROMOCODE AREA -->
-        <div class="bg-gray-900/40 border border-gray-800/80 rounded-2xl p-4 mb-4 space-y-2.5 shadow-inner">
-            <div class="flex justify-between items-center">
-                <span class="text-xs text-gray-300 font-bold flex items-center"><i class="fa-solid fa-ticket text-yellow-500 mr-1.5"></i>Система Промокодов</span>
-                <span class="text-[9px] text-gray-500 font-mono bg-black/40 px-2 py-0.5 rounded">Попробуйте "Vip" или "PremiumVip"</span>
-            </div>
-            <div class="flex space-x-2">
-                <input type="text" id="promo-input" placeholder="Код..." class="flex-1 bg-gray-950/80 border border-gray-800 rounded-xl px-3.5 py-2 text-xs text-white placeholder-gray-600 focus:outline-none focus:border-purple-500/50 transition">
-                <button onclick="applyPromocode()" class="bg-gradient-to-r from-yellow-500 to-yellow-600 hover:opacity-90 text-gray-950 text-xs font-extrabold px-5 py-2 rounded-xl transition active:scale-95 shadow-md">
-                    Ввод
-                </button>
-            </div>
-        </div>
-
-        <!-- ================= PAGE 1: CASES ================= -->
-        <div id="page-cases" class="space-y-4">
-            <!-- Active Case Roller Area -->
-            <div id="roller-area" class="hidden bg-gray-900/80 border border-gray-800 rounded-2xl p-4 space-y-3.5 relative shadow-2xl">
-                <div class="flex justify-between items-center">
-                    <h3 id="rolling-case-title" class="header-font text-md font-bold text-gray-200 flex items-center"><i class="fa-solid fa-box-open mr-2 text-yellow-500"></i>Кейс</h3>
-                    <button onclick="closeRoller()" class="text-gray-400 hover:text-white p-1">
-                        <i class="fa-solid fa-times text-lg"></i>
-                    </button>
-                </div>
-
-                <!-- Roulette -->
-                <div class="roulette-container rounded-xl shadow-lg">
-                    <div class="roulette-pointer"></div>
-                    <div id="roulette-track" class="roulette-track"></div>
-                </div>
-
-                <!-- Action buttons -->
-                <div class="flex space-x-2">
-                    <button id="spin-btn" onclick="startSpin()" class="flex-1 bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-gray-950 font-extrabold py-3.5 px-4 rounded-xl shadow-lg active:scale-95 transition-all text-center uppercase tracking-wider header-font text-sm">
-                        Открыть за <span id="spin-cost">$0.00</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- List of available Cases -->
-            <div class="space-y-3">
-                <div class="flex justify-between items-center border-b border-gray-800/80 pb-2.5">
-                    <span class="header-font text-xs font-bold tracking-wider text-gray-400 uppercase">Оружейные Кейсы (15+ видов)</span>
-                    <span id="vip-odds-indicator" class="text-[11px] text-yellow-500 flex items-center gap-1"><i class="fa-solid fa-star-of-david animate-spin"></i>Шансы увеличены на дорогих кейсах</span>
-                </div>
-
-                <!-- Cases Grid -->
-                <div class="grid grid-cols-2 gap-3" id="cases-grid">
-                    <!-- Loaded dynamically via JS -->
-                </div>
-            </div>
-        </div>
-
-        <!-- ================= PAGE 2: INVENTORY ================= -->
-        <div id="page-inventory" class="hidden space-y-4">
-            <div class="flex justify-between items-center border-b border-gray-800/80 pb-2">
-                <div class="flex items-center space-x-2">
-                    <span class="header-font text-sm font-bold tracking-wider text-gray-400 uppercase">Ваше оружие</span>
-                    <span id="inv-count" class="bg-gray-800 px-2 py-0.5 rounded text-xs text-gray-300">0</span>
-                </div>
-                <div class="flex space-x-2">
-                    <button onclick="sellAllInventory()" class="bg-red-950/40 hover:bg-red-900/60 text-red-400 border border-red-900/50 rounded-xl px-3 py-1.5 text-xs font-semibold active:scale-95 transition">
-                        Продать всё
-                    </button>
-                </div>
-            </div>
-
-            <div id="empty-inventory-state" class="text-center py-12 text-gray-500 space-y-3">
-                <i class="fa-solid fa-box-open text-5xl block text-gray-700 animate-pulse"></i>
-                <p class="text-sm">Ваш инвентарь пуст.<br>Откройте несколько кейсов, чтобы начать!</p>
-                <button onclick="switchTab('cases')" class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 font-bold px-6 py-2.5 rounded-xl text-xs tracking-wider uppercase header-font transition shadow-lg">
-                    К кейсам
-                </button>
-            </div>
-
-            <!-- Inventory grid -->
-            <div id="inventory-grid" class="grid grid-cols-2 gap-3.5"></div>
-        </div>
-
-        <!-- ================= PAGE 3: UPGRADER ================= -->
-        <div id="page-upgrader" class="hidden space-y-4">
-            <div class="border-b border-gray-800/80 pb-2 flex justify-between items-center">
-                <span class="header-font text-sm font-bold tracking-wider text-gray-400 uppercase">Улучшение скинов</span>
-                <span id="upgrade-vip-promo-label" class="text-[11px] text-gray-400">Шанс = Цена Вашего / Цена Цели</span>
-            </div>
-
-            <div class="grid grid-cols-2 gap-3">
-                <!-- Select Your Skin -->
-                <div class="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 flex flex-col items-center justify-between min-h-[170px] text-center" id="upgrader-source-box">
-                    <span class="text-xs text-gray-400 mb-2">Ваш скин</span>
-                    <div id="upgrader-source-content" class="w-full flex flex-col items-center justify-center flex-1">
-                        <button onclick="openUpgradeSelector('source')" class="border border-dashed border-gray-700 hover:border-yellow-500/50 rounded-2xl w-14 h-14 flex items-center justify-center text-gray-500 hover:text-yellow-500 transition mb-2">
-                            <i class="fa-solid fa-plus text-lg animate-pulse"></i>
-                        </button>
-                        <span class="text-xs text-gray-500">Выбрать</span>
-                    </div>
-                </div>
-
-                <!-- Select Target Skin -->
-                <div class="bg-gray-900/50 border border-gray-800/80 rounded-2xl p-4 flex flex-col items-center justify-between min-h-[170px] text-center" id="upgrader-target-box">
-                    <span class="text-xs text-gray-400 mb-2">Желаемый скин</span>
-                    <div id="upgrader-target-content" class="w-full flex flex-col items-center justify-center flex-1">
-                        <button onclick="openUpgradeSelector('target')" class="border border-dashed border-gray-700 hover:border-yellow-500/50 rounded-2xl w-14 h-14 flex items-center justify-center text-gray-500 hover:text-yellow-500 transition mb-2">
-                            <i class="fa-solid fa-crosshairs text-lg animate-pulse"></i>
-                        </button>
-                        <span class="text-xs text-gray-500">Выбрать</span>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Chance Wheel Graphic -->
-            <div id="wheel-container" class="bg-gray-900/80 border border-gray-800 rounded-2xl p-5 flex flex-col items-center justify-center relative overflow-hidden transition-all duration-300">
-                <div class="relative w-40 h-40 flex items-center justify-center">
-                    <svg class="w-full h-full transform -rotate-90">
-                        <circle cx="80" cy="80" r="70" stroke="#1f2937" stroke-width="10" fill="transparent" />
-                        <circle id="upgrade-chance-circle" cx="80" cy="80" r="70" stroke="#10b981" stroke-width="10" fill="transparent" stroke-dasharray="440" stroke-dashoffset="440" class="transition-all duration-300" />
-                    </svg>
-                    <!-- Center Display -->
-                    <div class="absolute inset-0 flex flex-col items-center justify-center">
-                        <span id="upgrade-chance-percent" class="header-font text-4xl font-extrabold text-white tracking-tight">0%</span>
-                        <div class="flex flex-col items-center leading-none">
-                            <span id="upgrade-chance-multiplier" class="text-[9px] text-yellow-500 font-extrabold hidden uppercase tracking-wider animate-pulse"></span>
-                            <span class="text-[10px] text-gray-400 tracking-wider uppercase mt-1">Шанс успеха</span>
+                <div class="grid grid-cols-2 gap-3">
+                    <button onclick="triggerState('music')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
+                        <span class="p-2 bg-emerald-500/20 text-emerald-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="music" class="w-5 h-5"></i>
+                        </span>
+                        <div>
+                            <p class="font-medium text-xs md:text-sm">Плеер</p>
+                            <p class="text-[10px] text-slate-400">Музыка</p>
                         </div>
-                    </div>
-                    <!-- Indicator tick hand -->
-                    <div id="upgrade-ticker" class="absolute w-1.5 h-16 bg-yellow-500 origin-bottom bottom-20 left-[79px] shadow-[0_0_8px_#e4ae39] rounded-t-full transform rotate-0 transition-transform duration-[4000ms] ease-out opacity-0"></div>
+                    </button>
+
+                    <button onclick="triggerState('call')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
+                        <span class="p-2 bg-blue-500/20 text-blue-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="phone-call" class="w-5 h-5"></i>
+                        </span>
+                        <div>
+                            <p class="font-medium text-xs md:text-sm">Звонок</p>
+                            <p class="text-[10px] text-slate-400">Входящий</p>
+                        </div>
+                    </button>
+
+                    <button onclick="triggerState('faceid')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
+                        <span class="p-2 bg-purple-500/20 text-purple-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="scan-face" class="w-5 h-5"></i>
+                        </span>
+                        <div>
+                            <p class="font-medium text-xs md:text-sm">Face ID</p>
+                            <p class="text-[10px] text-slate-400">Сканирование</p>
+                        </div>
+                    </button>
+
+                    <button onclick="triggerState('charging')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
+                        <span class="p-2 bg-amber-500/20 text-amber-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="zap" class="w-5 h-5"></i>
+                        </span>
+                        <div>
+                            <p class="font-medium text-xs md:text-sm">Зарядка</p>
+                            <p class="text-[10px] text-slate-400">Питание</p>
+                        </div>
+                    </button>
                 </div>
 
-                <div class="mt-4 w-full">
-                    <button id="upgrade-run-btn" onclick="runUpgrader()" disabled class="w-full py-3.5 px-4 rounded-xl font-bold header-font uppercase tracking-widest text-sm bg-gray-800 text-gray-500 cursor-not-allowed transition-all active:scale-95 shadow-md">
-                        Начать улучшение
+                <div class="grid grid-cols-1 gap-3">
+                    <button onclick="triggerState('notification')" class="flex items-center gap-3 p-3 rounded-2xl bg-slate-800/80 hover:bg-slate-700/80 border border-slate-700/50 transition-all text-left group">
+                        <span class="p-2 bg-rose-500/20 text-rose-400 rounded-xl group-hover:scale-110 transition-transform">
+                            <i data-lucide="bell" class="w-5 h-5"></i>
+                        </span>
+                        <div class="flex-1">
+                            <p class="font-medium text-xs md:text-sm">Уведомление</p>
+                            <p class="text-[10px] text-slate-400">Новое сообщение</p>
+                        </div>
+                    </button>
+                    
+                    <button onclick="resetIsland()" class="w-full py-2.5 rounded-2xl bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/20 transition-all text-sm font-semibold flex items-center justify-center gap-2">
+                        <i data-lucide="refresh-cw" class="w-4 h-4"></i> Сбросить состояние
                     </button>
                 </div>
             </div>
-        </div>
 
-        <!-- ================= PAGE 4: CONTRACTS ================= -->
-        <div id="page-contracts" class="hidden space-y-4">
-            <div class="border-b border-gray-800/80 pb-2 flex justify-between items-center">
-                <span class="header-font text-sm font-bold tracking-wider text-gray-400 uppercase">Контракт обмена</span>
-                <span class="text-xs text-gray-400">Внесите <span class="font-bold text-yellow-500">10 скинов</span></span>
-            </div>
-
-            <!-- Contract Progress Card -->
-            <div class="bg-gray-900/80 border border-gray-800 rounded-2xl p-4 text-center space-y-3 shadow-lg">
-                <p class="text-xs text-gray-400">Объедините 10 любых скинов, чтобы получить 1 случайный скин качеством ВЫШЕ!</p>
-                
-                <!-- Slots Visual Grid (10 slots) -->
-                <div id="contract-slots" class="grid grid-cols-5 gap-2 justify-center py-2">
-                    <!-- 10 Slots -->
-                </div>
-
-                <div class="flex justify-between items-center bg-black/40 p-3 rounded-xl border border-gray-800/80">
-                    <div class="text-left">
-                        <span class="text-[9px] text-gray-500 uppercase block">Выбрано скинов</span>
-                        <span id="contract-selected-count" class="header-font font-bold text-lg text-yellow-500">0 / 10</span>
-                    </div>
-                    <button id="contract-run-btn" onclick="signContract()" disabled class="bg-gray-800 text-gray-500 px-6 py-2.5 rounded-xl font-bold header-font uppercase text-xs tracking-wider transition active:scale-95 cursor-not-allowed">
-                        Подписать
-                    </button>
-                </div>
-            </div>
-
-            <div class="space-y-2">
-                <span class="text-[11px] text-gray-400 uppercase tracking-wider block">Доступные скины:</span>
-                <div id="contract-inventory-grid" class="grid grid-cols-2 gap-2"></div>
+            <!-- Дополнительная информация -->
+            <div class="text-xs text-slate-500 flex flex-col gap-1 px-2">
+                <p>💡 Подсказка: Вы также можете нажимать на приложения прямо на экране смартфона, чтобы активировать функции.</p>
+                <p>👉 Попробуйте нажать на сам Dynamic Island, когда он раскрыт, чтобы свернуть его.</p>
             </div>
         </div>
 
-    </main>
-
-    <!-- SETTINGS MODAL -->
-    <div id="settings-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
-        <div class="bg-gray-900 border border-gray-800 rounded-3xl p-6 w-full max-w-sm text-center relative shadow-2xl">
-            <button onclick="closeSettings()" class="absolute top-4 right-4 text-gray-400 hover:text-white p-1">
-                <i class="fa-solid fa-times text-lg"></i>
-            </button>
-            <h3 class="header-font text-xl font-bold text-white mb-5"><i class="fa-solid fa-gear text-yellow-500 mr-2"></i>Настройки</h3>
+        <!-- Правая колонка: Макет iPhone 14 Pro -->
+        <div class="relative flex items-center justify-center">
             
-            <div class="space-y-4 text-left">
-                <!-- iOS Interface Toggle -->
-                <div class="flex justify-between items-center bg-black/40 p-3.5 rounded-xl border border-gray-800">
-                    <div>
-                        <span class="text-sm font-semibold text-gray-200 block">Интерфейс iOS 26</span>
-                        <span class="text-[10px] text-gray-400">Включает Apple Glassmorphism стиль & Dynamic Island</span>
-                    </div>
-                    <label class="relative inline-flex items-center cursor-pointer">
-                        <input type="checkbox" id="ios-toggle" onchange="toggleIosInterface()" class="sr-only peer">
-                        <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
-                    </label>
-                </div>
+            <!-- Боковые кнопки iPhone (визуальная декорация) -->
+            <div class="absolute -left-1.5 top-28 w-1.5 h-10 bg-zinc-800 rounded-l shadow-md"></div>
+            <div class="absolute -left-1.5 top-44 w-1.5 h-14 bg-zinc-800 rounded-l shadow-md"></div>
+            <div class="absolute -left-1.5 top-64 w-1.5 h-14 bg-zinc-800 rounded-l shadow-md"></div>
+            <div class="absolute -right-1.5 top-44 w-1.5 h-16 bg-zinc-800 rounded-r shadow-md"></div>
 
-                <!-- Sync Code Progress Recovery -->
-                <div class="bg-black/40 p-3.5 rounded-xl border border-gray-800 space-y-2">
-                    <span class="text-sm font-semibold text-gray-200 block"><i class="fa-solid fa-cloud-arrow-up text-indigo-400 mr-1.5"></i>Синхронизация прогресса</span>
-                    <p class="text-[10px] text-gray-400 leading-normal">
-                        Скопируйте ваш секретный код, чтобы перенести баланс, VIP и инвентарь на любое другое устройство!
-                    </p>
-                    <div class="flex items-center space-x-1.5 mt-2 bg-gray-950 p-2 rounded-lg border border-gray-800">
-                        <input type="text" id="sync-user-id" readonly class="bg-transparent text-[11px] font-mono text-gray-300 flex-1 focus:outline-none">
-                        <button onclick="copyUserId()" class="bg-gray-800 hover:bg-gray-700 active:scale-95 text-yellow-500 px-2.5 py-1 text-[10px] font-bold rounded transition">
-                            <i class="fa-solid fa-copy"></i>
-                        </button>
-                    </div>
-                    <div class="border-t border-gray-800/80 pt-2.5 space-y-1.5">
-                        <span class="text-[10px] font-semibold text-gray-400">Восстановить прогресс с другого устройства:</span>
-                        <div class="flex space-x-1.5">
-                            <input type="text" id="sync-restore-id" placeholder="Вставьте код..." class="flex-1 bg-gray-950 text-[11px] font-mono px-2 py-1.5 border border-gray-800 rounded focus:outline-none focus:border-yellow-500">
-                            <button onclick="restoreUserProgress()" class="bg-indigo-600 hover:bg-indigo-500 active:scale-95 text-white text-[10px] font-bold px-3.5 rounded transition">
-                                Перенести
-                            </button>
+            <!-- Корпус телефона -->
+            <div class="relative w-[385px] h-[800px] bg-black rounded-[60px] p-[13px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.9)] border-[5px] border-zinc-800 flex flex-col overflow-hidden select-none">
+                
+                <!-- Защитная рамка / Экран -->
+                <div class="relative w-full h-full rounded-[48px] overflow-hidden bg-cover bg-center flex flex-col justify-between" style="background-image: url('https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?auto=format&fit=crop&q=80&w=800');">
+                    
+                    <!-- Стеклянный градиент-фильтр поверх обоев -->
+                    <div class="absolute inset-0 bg-black/10 backdrop-brightness-95 pointer-events-none"></div>
+
+                    <!-- ПЕРЕДНЯЯ КАМЕРА / DYNAMIC ISLAND -->
+                    <div class="absolute top-3 left-0 right-0 flex justify-center z-50">
+                        <div id="dynamicIsland" onclick="handleIslandClick(event)" class="dynamic-island-transition island-compact bg-black cursor-pointer flex items-center justify-center overflow-hidden text-white shadow-lg shadow-black/40">
+                            
+                            <!-- 1. State: Compact (Обычное состояние) -->
+                            <div id="content-compact" class="flex items-center justify-center w-full h-full">
+                                <!-- Маленькая скрытая линза камеры (визуальный эффект) -->
+                                <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 absolute left-3.5 border border-zinc-950 flex items-center justify-center">
+                                    <div class="w-1.5 h-1.5 rounded-full bg-indigo-950/40"></div>
+                                </div>
+                                <div class="w-3.5 h-3.5 rounded-full bg-zinc-900 absolute right-3.5 border border-zinc-950 flex items-center justify-center">
+                                    <div class="w-1 h-1 rounded-full bg-emerald-950/40"></div>
+                                </div>
+                            </div>
+
+                            <!-- 2. State: Music (Прослушивание музыки) -->
+                            <div id="content-music" class="hidden w-full h-full items-center justify-between px-4">
+                                <div class="flex items-center gap-2">
+                                    <img src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&q=80&w=100" class="w-6 h-6 rounded-md object-cover border border-white/10" alt="Album Art">
+                                    <div class="flex flex-col text-left">
+                                        <span class="text-[11px] font-bold tracking-tight text-white leading-none truncate w-24">After Hours</span>
+                                        <span class="text-[9px] text-zinc-400 leading-none mt-0.5">The Weeknd</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <!-- Анимированный эквалайзер -->
+                                    <div class="flex items-end gap-[2px] h-4 w-6">
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                        <div class="bar"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 3. State: Incoming Call (Входящий вызов) -->
+                            <div id="content-call" class="hidden w-full h-full items-center justify-between px-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-10 h-10 rounded-full bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center font-bold text-sm shadow-inner text-white">
+                                        ДМ
+                                    </div>
+                                    <div class="flex flex-col text-left">
+                                        <span class="text-[11px] text-zinc-400">Входящий звонок</span>
+                                        <span class="text-sm font-bold leading-tight">Дмитрий Морозов</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <!-- Кнопка сброса -->
+                                    <button onclick="event.stopPropagation(); resetIsland();" class="w-8 h-8 rounded-full bg-red-500 hover:bg-red-600 flex items-center justify-center text-white transition-all shadow-md active:scale-95">
+                                        <i data-lucide="phone-off" class="w-4 h-4"></i>
+                                    </button>
+                                    <!-- Кнопка ответа -->
+                                    <button onclick="event.stopPropagation(); acceptCall();" class="w-8 h-8 rounded-full bg-emerald-500 hover:bg-emerald-600 flex items-center justify-center text-white transition-all shadow-md active:scale-95">
+                                        <i data-lucide="phone" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- 4. State: Face ID (Сканирование) -->
+                            <div id="content-faceid" class="hidden w-full h-full flex-col items-center justify-center p-3">
+                                <div class="relative w-12 h-12 flex items-center justify-center text-indigo-400 mb-1">
+                                    <i data-lucide="scan-face" class="w-10 h-10 animate-scan"></i>
+                                </div>
+                                <span class="text-[11px] font-semibold text-zinc-300">Face ID</span>
+                            </div>
+
+                            <!-- 5. State: Charging (Зарядка) -->
+                            <div id="content-charging" class="hidden w-full h-full items-center justify-between px-5">
+                                <div class="flex items-center gap-2">
+                                    <i data-lucide="zap" class="w-4 h-4 text-emerald-400 fill-emerald-400"></i>
+                                    <span class="text-xs font-semibold text-zinc-300">Заряжается</span>
+                                </div>
+                                <span class="text-xs font-bold text-emerald-400" id="chargingPercent">84%</span>
+                            </div>
+
+                            <!-- 6. State: Notification (Новое уведомление) -->
+                            <div id="content-notification" class="hidden w-full h-full flex flex-col justify-between p-3.5 text-left">
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-2">
+                                        <div class="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center border border-white/10">
+                                            <i data-lucide="message-square" class="w-3.5 h-3.5 text-indigo-400"></i>
+                                        </div>
+                                        <span class="text-[11px] font-bold text-zinc-400">Telegram</span>
+                                    </div>
+                                    <span class="text-[10px] text-zinc-500">сейчас</span>
+                                </div>
+                                <div class="flex flex-col mt-1">
+                                    <span class="text-[12px] font-bold text-white leading-tight">Алексей Смирнов</span>
+                                    <p class="text-[11px] text-zinc-300 truncate mt-0.5">Привет! Всё готово к презентации, ждем тебя в офисе через 15 минут.</p>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
+
+                    <!-- ВЕРХНЯЯ СТАТУС-ПАНЕЛЬ -->
+                    <div class="pt-3 px-8 flex justify-between items-center text-xs font-semibold z-40 text-white select-none pointer-events-none">
+                        <!-- Время (слева от челки) -->
+                        <span id="statusBarTime" class="tracking-tight">09:41</span>
+                        
+                        <!-- Статус связи, Wi-Fi, Батарея (справа от челки) -->
+                        <div class="flex items-center gap-1.5">
+                            <i data-lucide="signal" class="w-3.5 h-3.5"></i>
+                            <span class="text-[10px]">5G</span>
+                            <i data-lucide="wifi" class="w-3.5 h-3.5"></i>
+                            <div class="flex items-center gap-0.5 border border-white/40 rounded-sm px-0.5 py-px text-[9px] leading-none">
+                                <span id="statusBarBattery">84</span>
+                                <i data-lucide="battery" class="w-3 h-3 text-white"></i>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- ОСНОВНОЙ ЭКРАН С ПРИЛОЖЕНИЯМИ -->
+                    <div class="flex-1 flex flex-col justify-between px-6 pt-12 pb-6 z-30">
+                        
+                        <!-- Карусель виджетов -->
+                        <div class="grid grid-cols-2 gap-3 mt-4">
+                            <!-- Календарь -->
+                            <div class="bg-black/40 backdrop-blur-md rounded-2xl p-3 border border-white/5 flex flex-col justify-between h-20">
+                                <span class="text-[10px] font-semibold text-rose-500 uppercase">Понедельник</span>
+                                <span class="text-2xl font-bold leading-none -mt-1">18</span>
+                                <span class="text-[10px] text-zinc-300">Планы отсутствуют</span>
+                            </div>
+                            <!-- Погода -->
+                            <div class="bg-black/40 backdrop-blur-md rounded-2xl p-3 border border-white/5 flex flex-col justify-between h-20">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-[10px] text-zinc-300 font-medium">Москва</span>
+                                    <i data-lucide="sun-dim" class="w-4 h-4 text-amber-400"></i>
+                                </div>
+                                <div>
+                                    <span class="text-xl font-bold leading-none">+21°</span>
+                                    <p class="text-[9px] text-zinc-300 truncate">Ясно, без осадков</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Сетка приложений (Интерактивные) -->
+                        <div class="grid grid-cols-4 gap-y-4 gap-x-2 my-auto">
+                            <!-- Музыка (Триггер) -->
+                            <button onclick="triggerState('music')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-rose-500 to-pink-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
+                                    <i data-lucide="music" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Музыка</span>
+                            </button>
+
+                            <!-- Телефон (Триггер) -->
+                            <button onclick="triggerState('call')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-emerald-500 to-green-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
+                                    <i data-lucide="phone" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Телефон</span>
+                            </button>
+
+                            <!-- Face ID (Триггер) -->
+                            <button onclick="triggerState('faceid')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-purple-500 to-indigo-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
+                                    <i data-lucide="scan-face" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Face ID</span>
+                            </button>
+
+                            <!-- Зарядка (Триггер) -->
+                            <button onclick="triggerState('charging')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-amber-500 to-yellow-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
+                                    <i data-lucide="battery-charging" class="w-6 h-6 text-white"></i>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Питание</span>
+                            </button>
+
+                            <!-- Сообщения (Триггер) -->
+                            <button onclick="triggerState('notification')" class="flex flex-col items-center gap-1.5 focus:outline-none group">
+                                <div class="relative w-12 h-12 rounded-xl bg-gradient-to-tr from-blue-500 to-sky-600 flex items-center justify-center shadow-lg group-active:scale-95 transition-transform border border-white/10">
+                                    <i data-lucide="message-square" class="w-6 h-6 text-white"></i>
+                                    <span class="absolute -top-1 -right-1 w-4 h-4 bg-rose-500 rounded-full text-[9px] font-bold flex items-center justify-center text-white">1</span>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Чат</span>
+                            </button>
+
+                            <!-- Фото (Статичное приложение) -->
+                            <div class="flex flex-col items-center gap-1.5 group">
+                                <div class="w-12 h-12 rounded-xl bg-white flex items-center justify-center shadow-lg border border-white/10 overflow-hidden">
+                                    <div class="grid grid-cols-2 w-full h-full p-1 gap-0.5">
+                                        <div class="bg-indigo-400 rounded-sm"></div>
+                                        <div class="bg-amber-400 rounded-sm"></div>
+                                        <div class="bg-rose-400 rounded-sm"></div>
+                                        <div class="bg-emerald-400 rounded-sm"></div>
+                                    </div>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Фото</span>
+                            </div>
+
+                            <!-- Настройки -->
+                            <div class="flex flex-col items-center gap-1.5 group">
+                                <div class="w-12 h-12 rounded-xl bg-slate-600 flex items-center justify-center shadow-lg border border-white/10">
+                                    <i data-lucide="settings" class="w-6 h-6 text-zinc-300"></i>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Настройки</span>
+                            </div>
+
+                            <!-- Камера -->
+                            <div class="flex flex-col items-center gap-1.5 group">
+                                <div class="w-12 h-12 rounded-xl bg-zinc-800 flex items-center justify-center shadow-lg border border-white/10">
+                                    <i data-lucide="camera" class="w-6 h-6 text-zinc-400"></i>
+                                </div>
+                                <span class="text-[10px] font-medium text-white/90 truncate max-w-full">Камера</span>
+                            </div>
+                        </div>
+
+                        <!-- Нижний Док-бар (Dock) -->
+                        <div class="bg-white/15 backdrop-blur-xl border border-white/10 rounded-[28px] p-2.5 flex justify-around items-center">
+                            <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-indigo-600 to-indigo-800 flex items-center justify-center shadow-md">
+                                <i data-lucide="globe" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="w-11 h-11 rounded-xl bg-zinc-900 flex items-center justify-center shadow-md">
+                                <i data-lucide="mail" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="w-11 h-11 rounded-xl bg-emerald-500 flex items-center justify-center shadow-md" onclick="triggerState('call')">
+                                <i data-lucide="phone" class="w-5 h-5 text-white"></i>
+                            </div>
+                            <div class="w-11 h-11 rounded-xl bg-rose-500 flex items-center justify-center shadow-md" onclick="triggerState('music')">
+                                <i data-lucide="music" class="w-5 h-5 text-white"></i>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- ИНДИКАТОР ДОМОЙ (HOME BAR) -->
+                    <div class="absolute bottom-1.5 left-0 right-0 flex justify-center z-50">
+                        <div class="w-32 h-1 bg-white/70 rounded-full"></div>
+                    </div>
+
                 </div>
             </div>
         </div>
+
     </div>
 
-    <!-- GOLD VIP ACTIVATION CARD MODAL -->
-    <div id="vip-modal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="vip-gold-card border-4 border-yellow-300 text-gray-950 rounded-3xl p-6 w-full max-w-sm text-center relative shadow-[0_0_40px_rgba(251,245,183,0.4)] transition transform scale-100 duration-300">
-            <div class="absolute top-4 right-4 text-amber-900 text-xl animate-pulse">
-                <i class="fa-solid fa-star"></i>
-            </div>
-            <div class="w-20 h-20 mx-auto rounded-full bg-amber-900/10 flex items-center justify-center mb-4 border-2 border-amber-900/20">
-                <i class="fa-solid fa-crown text-amber-900 text-4xl"></i>
-            </div>
-            <h2 class="header-font text-3xl font-extrabold text-amber-950 tracking-wider mb-1">ВЫ VIP ИГРОК!</h2>
-            <p class="text-[10px] font-bold text-amber-900 uppercase tracking-widest border-y border-amber-900/20 py-1 mb-4">Уникальный статус активирован</p>
-            <div class="text-left space-y-2.5 my-5 bg-amber-950/10 p-3.5 rounded-xl border border-amber-900/10">
-                <div class="flex items-start space-x-2.5">
-                    <i class="fa-solid fa-bolt text-amber-900 mt-0.5"></i>
-                    <p class="text-xs font-bold text-amber-950">Кликер x2: Получайте $100.00 вместо $50.00 за каждое нажатие!</p>
-                </div>
-                <div class="flex items-start space-x-2.5">
-                    <i class="fa-solid fa-percent text-amber-900 mt-0.5"></i>
-                    <p class="text-xs font-bold text-amber-950">Апгрейдер x2: Ваши шансы на успешный апгрейд увеличены в 2 раза!</p>
-                </div>
-                <div class="flex items-start space-x-2.5">
-                    <i class="fa-solid fa-gem text-amber-900 mt-0.5"></i>
-                    <p class="text-xs font-bold text-amber-950">Шансы CS2 x2: Шанс на дроп редких предметов из кейсов умножен на 2!</p>
-                </div>
-                <div class="flex items-start space-x-2.5 text-yellow-900">
-                    <i class="fa-solid fa-fire text-amber-950 mt-0.5"></i>
-                    <p class="text-xs font-bold text-amber-950">VIP Кейс: Открыт доступ к супер-кейсу с дропом до $5,000!</p>
-                </div>
-            </div>
-            <button onclick="closeVipModal()" class="w-full bg-amber-950 hover:bg-amber-900 text-yellow-100 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition active:scale-95 shadow-lg">
-                Начать доминировать!
-            </button>
-        </div>
+    <!-- Системные уведомления (Внутриэкранные логирования действий) -->
+    <div id="toast" class="fixed bottom-6 bg-slate-950/90 text-slate-200 px-4 py-2 rounded-full border border-white/10 text-xs tracking-wide shadow-xl backdrop-blur-md opacity-0 pointer-events-none transition-all duration-300 transform translate-y-2 flex items-center gap-2">
+        <i data-lucide="info" class="w-3.5 h-3.5 text-indigo-400"></i>
+        <span id="toastMessage">Оповещение системы</span>
     </div>
-
-    <!-- PREMIUM VIP ACTIVATION CARD MODAL (Purple Diamond Cosmic) -->
-    <div id="premium-vip-modal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex items-center justify-center p-4">
-        <div class="vip-premium-card border-4 border-purple-400 text-white rounded-3xl p-6 w-full max-w-sm text-center relative shadow-[0_0_50px_rgba(168,85,247,0.5)] transition transform scale-100 duration-300">
-            <div class="absolute top-4 right-4 text-purple-300 text-2xl animate-spin" style="animation-duration: 4s;">
-                <i class="fa-solid fa-dharmachakra"></i>
-            </div>
-            <div class="w-20 h-20 mx-auto rounded-full bg-purple-500/20 flex items-center justify-center mb-4 border-2 border-purple-400/40 shadow-inner">
-                <i class="fa-solid fa-gem text-purple-300 text-4xl animate-bounce"></i>
-            </div>
-            <h2 class="header-font text-3xl font-extrabold text-purple-100 tracking-wider mb-1">УЛЬТРА PREMIUM VIP!</h2>
-            <p class="text-[10px] font-bold text-purple-300 uppercase tracking-widest border-y border-purple-500/30 py-1 mb-4">Максимальный Космический Статус</p>
-            <div class="text-left space-y-2.5 my-5 bg-black/40 p-3.5 rounded-2xl border border-purple-500/20 text-purple-100">
-                <div class="flex items-start space-x-2.5">
-                    <i class="fa-solid fa-bolt text-purple-400 mt-0.5"></i>
-                    <p class="text-xs font-bold">Кликер x4: Фармите сразу $200.00 за каждый клик!</p>
-                </div>
-                <div class="flex items-start space-x-2.5">
-                    <i class="fa-solid fa-percent text-purple-400 mt-0.5"></i>
-                    <p class="text-xs font-bold">Апгрейдер x4: Все Ваши шансы на улучшение увеличены в 4 раза!</p>
-                </div>
-                <div class="flex items-start space-x-2.5">
-                    <i class="fa-solid fa-circle-nodes text-purple-400 mt-0.5"></i>
-                    <p class="text-xs font-bold">Шансы Кейсов x4: Шансы на нож/перчатки повышены в 4 раза!</p>
-                </div>
-                <div class="flex items-start space-x-2.5 text-yellow-300">
-                    <i class="fa-solid fa-clover text-yellow-400 mt-0.5"></i>
-                    <p class="text-xs font-bold">Ультра Кейс: Открыт доступ к «★ Godlike Premium Case» (скины от $10К до $1М)!</p>
-                </div>
-            </div>
-            <button onclick="closePremiumVipModal()" class="w-full bg-white hover:bg-gray-100 text-purple-950 py-3.5 rounded-xl font-extrabold text-xs tracking-wider uppercase transition active:scale-95 shadow-lg">
-                Стать Богом Открытия!
-            </button>
-        </div>
-    </div>
-
-    <!-- FLOATING SKIN DROPPED MODAL -->
-    <div id="win-modal" class="hidden fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center p-4">
-        <div id="win-modal-card" class="bg-gradient-to-b from-gray-900 to-[#0c0f14] border-2 rounded-2xl p-6 w-full max-w-sm text-center relative shadow-2xl transition transform scale-95 opacity-0 duration-300">
-            <h2 class="header-font text-2xl font-extrabold text-yellow-500 tracking-wider mb-2">ПОЗДРАВЛЯЕМ!</h2>
-            <p id="win-rarity-badge" class="inline-block text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-4">COVERT</p>
-            <div id="win-skin-glow" class="w-36 h-36 mx-auto rounded-full flex items-center justify-center mb-4 relative">
-                <div id="win-skin-icon-container" class="w-28 h-28 flex items-center justify-center z-10"></div>
-            </div>
-            <h3 id="win-skin-name" class="font-bold text-lg text-white">M4A1-S | Принц</h3>
-            <p id="win-skin-float" class="text-xs text-gray-400 mt-1 mb-2">Float: 0.082</p>
-            <p id="win-skin-price" class="header-font text-xl font-bold text-yellow-500 mb-6">$340.00</p>
-            <div class="grid grid-cols-2 gap-3">
-                <button onclick="sellWonSkin()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 py-3 rounded-xl font-semibold text-xs tracking-wider uppercase transition">Продать сразу</button>
-                <button onclick="keepWonSkin()" class="bg-yellow-500 hover:bg-yellow-400 text-gray-950 py-3 rounded-xl font-bold text-xs tracking-wider uppercase transition">В инвентарь</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- UNIVERSAL SKIN SELECTOR MODAL -->
-    <div id="selector-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-xs flex flex-col justify-end p-0">
-        <div class="bg-[#0e131d] border-t border-gray-800 rounded-t-3xl max-h-[85vh] flex flex-col p-4 space-y-3 shadow-2xl">
-            <div class="flex justify-between items-center border-b border-gray-800 pb-2">
-                <h4 id="selector-modal-title" class="header-font text-md font-bold text-white">Выберите предмет</h4>
-                <button onclick="closeSelectorModal()" class="text-gray-400 hover:text-white p-2">
-                    <i class="fa-solid fa-times text-lg"></i>
-                </button>
-            </div>
-            <div id="selector-modal-list" class="flex-1 overflow-y-auto space-y-2 max-h-[60vh] pr-1"></div>
-        </div>
-    </div>
-
-    <!-- BOTTOM NAVIGATION (Enhanced icons) -->
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-gray-950/95 backdrop-blur-md border-t border-gray-800 flex justify-around items-center h-16 px-2 z-40 transition-colors">
-        <button id="tab-cases" onclick="switchTab('cases')" class="flex flex-col items-center justify-center flex-1 py-1 text-yellow-500 transition nav-active-glow">
-            <i class="fa-solid fa-cubes text-xl"></i>
-            <span class="text-[9px] mt-1 font-bold tracking-wider uppercase">Кейсы</span>
-        </button>
-        <button id="tab-inventory" onclick="switchTab('inventory')" class="flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-gray-200 transition">
-            <i class="fa-solid fa-vault text-xl"></i>
-            <span class="text-[9px] mt-1 font-bold tracking-wider uppercase">Склад</span>
-        </button>
-        <button id="tab-upgrader" onclick="switchTab('upgrader')" class="flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-gray-200 transition">
-            <i class="fa-solid fa-chart-line text-xl"></i>
-            <span class="text-[9px] mt-1 font-bold tracking-wider uppercase">Апгрейд</span>
-        </button>
-        <button id="tab-contracts" onclick="switchTab('contracts')" class="flex flex-col items-center justify-center flex-1 py-1 text-gray-400 hover:text-gray-200 transition">
-            <i class="fa-solid fa-file-invoice text-xl"></i>
-            <span class="text-[9px] mt-1 font-bold tracking-wider uppercase">Сделка</span>
-        </button>
-    </nav>
-
-    <!-- iOS 26 Visual Home bar -->
-    <div class="ios-home-indicator"></div>
 
     <script>
-        // --- Web Audio sound engine ---
-        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
-        function playTickSound() {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.type = 'triangle';
-                osc.frequency.setValueAtTime(320, audioCtx.currentTime);
-                osc.frequency.exponentialRampToValueAtTime(20, audioCtx.currentTime + 0.08);
-                gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.08);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.08);
-            } catch (e) {}
-        }
+        // Инициализация иконок
+        lucide.createIcons();
 
-        function playWinSound(rarity) {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-                const notes = rarity === 'godlike' ? [523.25, 659.25, 783.99, 1046.50] : [261.63, 329.63, 392.00];
-                notes.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-                    gain.gain.setValueAtTime(0.07, now + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.5);
-                    osc.start(now + idx * 0.08);
-                    osc.stop(now + idx * 0.08 + 0.5);
-                });
-            } catch (e) {}
-        }
+        // Переменные состояния
+        let currentState = 'compact';
+        let isPowerCharging = false;
+        let batteryLevel = 84;
 
-        function playFailSound() {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const osc = audioCtx.createOscillator();
-                const gain = audioCtx.createGain();
-                osc.connect(gain);
-                gain.connect(audioCtx.destination);
-                osc.type = 'sawtooth';
-                osc.frequency.setValueAtTime(110, audioCtx.currentTime);
-                osc.frequency.linearRampToValueAtTime(50, audioCtx.currentTime + 0.4);
-                gain.gain.setValueAtTime(0.06, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
-                osc.start();
-                osc.stop(audioCtx.currentTime + 0.4);
-            } catch (e) {}
-        }
-
-        function playVipSound() {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-                const notes = [293.66, 369.99, 440.00, 587.33, 739.99];
-                notes.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.type = 'triangle';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.08);
-                    gain.gain.setValueAtTime(0.08, now + idx * 0.08);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.8);
-                    osc.start(now + idx * 0.08);
-                    osc.stop(now + idx * 0.08 + 0.8);
-                });
-            } catch (e) {}
-        }
-
-        function playPremiumVipSound() {
-            try {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-                const now = audioCtx.currentTime;
-                // Сверхкосмический переливающийся мажорный аккорд
-                const notes = [329.63, 415.30, 493.88, 659.25, 830.61, 987.77, 1318.51];
-                notes.forEach((freq, idx) => {
-                    const osc = audioCtx.createOscillator();
-                    const gain = audioCtx.createGain();
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
-                    osc.type = 'sine';
-                    osc.frequency.setValueAtTime(freq, now + idx * 0.06);
-                    gain.gain.setValueAtTime(0.09, now + idx * 0.06);
-                    gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.06 + 1.2);
-                    osc.start(now + idx * 0.06);
-                    osc.stop(now + idx * 0.06 + 1.2);
-                });
-            } catch (e) {}
-        }
-
-        // --- Firebase Integration Config ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'cs2-case-opener-ios26-premium';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-            apiKey: "",
-            authDomain: "default-app-id.firebaseapp.com",
-            projectId: "default-app-id",
-            storageBucket: "default-app-id.appspot.com",
-            messagingSenderId: "12345",
-            appId: "1:12345:web:12345"
+        // Элементы DOM
+        const island = document.getElementById('dynamicIsland');
+        const contents = {
+            compact: document.getElementById('content-compact'),
+            music: document.getElementById('content-music'),
+            call: document.getElementById('content-call'),
+            faceid: document.getElementById('content-faceid'),
+            charging: document.getElementById('content-charging'),
+            notification: document.getElementById('content-notification')
         };
 
-        // Initialize Firebase
-        let db = null;
-        let auth = null;
-        let isCloudActive = false;
-        let userId = localStorage.getItem('cs2_sim_user_id') || crypto.randomUUID();
-        localStorage.setItem('cs2_sim_user_id', userId);
-
-        try {
-            firebase.initializeApp(firebaseConfig);
-            auth = firebase.auth();
-            db = firebase.firestore();
-
-            const initAuth = async () => {
-                try {
-                    if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                        await auth.signInWithCustomToken(__initial_auth_token);
-                    } else {
-                        await auth.signInAnonymously();
-                    }
-                    isCloudActive = true;
-                    userId = auth.currentUser ? auth.currentUser.uid : userId;
-                    localStorage.setItem('cs2_sim_user_id', userId);
-                    document.getElementById('sync-user-id').value = userId;
-                    loadProgressFromCloud();
-                } catch (err) {
-                    console.warn("Auth failed, working with local cache:", err);
-                    loadLocalBackup();
-                }
-            };
-            initAuth();
-        } catch (e) {
-            console.warn("Firestore offline. Local Storage mode.", e);
-            loadLocalBackup();
+        // Живые часы на статус-баре
+        function updateTime() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            document.getElementById('statusBarTime').textContent = `${hours}:${minutes}`;
         }
+        setInterval(updateTime, 1000);
+        updateTime();
 
-        // --- Game Config & Rarity DB ---
-        const RARITIES = {
-            common: { name: 'Армейское', color: '#4b69ff', badge: 'Mil-Spec' },
-            uncommon: { name: 'Запрещенное', color: '#8847ff', badge: 'Restricted' },
-            rare: { name: 'Засекреченное', color: '#d32ce6', badge: 'Classified' },
-            classified: { name: 'Тайное', color: '#eb4b4b', badge: 'Covert' },
-            covert: { name: '★ Нож/Перчатки', color: '#e4ae39', badge: '★ Special' },
-            godlike: { name: '⚡ БОЖЕСТВЕННОЕ ⚡', color: '#ff3e3e', badge: '⚡ MYTHICAL' }
-        };
-
-        // Extended Skins Database (including Godlike $10K - $1M items)
-        const SKINS_DB = [
-            // Mil-Spec (Common)
-            { id: 'm4a4_magnesium', name: 'M4A4 | Magnesium', rarity: 'common', price: 0.80, icon: 'rifle' },
-            { id: 'ak47_safari', name: 'AK-47 | Safari Mesh', rarity: 'common', price: 1.20, icon: 'rifle' },
-            { id: 'awp_capillary', name: 'AWP | Capillary', rarity: 'common', price: 2.10, icon: 'sniper' },
-            { id: 'usp_torque', name: 'USP-S | Torque', rarity: 'common', price: 1.50, icon: 'pistol' },
-            { id: 'glock_offworld', name: 'Glock-18 | Off World', rarity: 'common', price: 0.90, icon: 'pistol' },
-            { id: 'deagle_bronze', name: 'Desert Eagle | Bronze Deco', rarity: 'common', price: 1.70, icon: 'pistol' },
-            { id: 'famas_meow', name: 'FAMAS | Meow 36', rarity: 'common', price: 1.10, icon: 'rifle' },
-            { id: 'sg553_baron', name: 'SG 553 | Dragon Tech', rarity: 'common', price: 1.45, icon: 'rifle' },
-
-            // Restricted (Uncommon)
-            { id: 'ak47_unexplored', name: 'AK-47 | Unexplored', rarity: 'uncommon', price: 4.50, icon: 'rifle' },
-            { id: 'm4a1_nitro', name: 'M4A1-S | Nitro', rarity: 'uncommon', price: 5.80, icon: 'rifle' },
-            { id: 'awp_atheris', name: 'AWP | Atheris', rarity: 'uncommon', price: 8.50, icon: 'sniper' },
-            { id: 'usp_cyrex', name: 'USP-S | Cyrex', rarity: 'uncommon', price: 6.20, icon: 'pistol' },
-            { id: 'glock_water', name: 'Glock-18 | Water Elemental', rarity: 'uncommon', price: 7.40, icon: 'pistol' },
-            { id: 'mac10_disco', name: 'MAC-10 | Disco Tech', rarity: 'uncommon', price: 5.10, icon: 'pistol' },
-            { id: 'p250_visions', name: 'P250 | Visions', rarity: 'uncommon', price: 6.90, icon: 'pistol' },
-
-            // Classified (Rare)
-            { id: 'ak47_redline', name: 'AK-47 | Redline', rarity: 'rare', price: 18.50, icon: 'rifle' },
-            { id: 'm4a4_desolate', name: 'M4A4 | Desolate Space', rarity: 'rare', price: 22.00, icon: 'rifle' },
-            { id: 'awp_fever', name: 'AWP | Fever Dream', rarity: 'rare', price: 16.00, icon: 'sniper' },
-            { id: 'deagle_code', name: 'Desert Eagle | Code Red', rarity: 'rare', price: 29.00, icon: 'pistol' },
-            { id: 'usp_neo', name: 'USP-S | Neo-Noir', rarity: 'rare', price: 24.50, icon: 'pistol' },
-            { id: 'awp_wildfire', name: 'AWP | Wildfire', rarity: 'rare', price: 45.00, icon: 'sniper' },
-            { id: 'm4a1_player', name: 'M4A1-S | Player Two', rarity: 'rare', price: 34.00, icon: 'rifle' },
-
-            // Covert (Classified)
-            { id: 'ak47_vulcan', name: 'AK-47 | Vulcan', rarity: 'classified', price: 78.00, icon: 'rifle' },
-            { id: 'm4a1_hyper', name: 'M4A1-S | Hyper Beast', rarity: 'classified', price: 65.00, icon: 'rifle' },
-            { id: 'awp_asiimov', name: 'AWP | Asiimov', rarity: 'classified', price: 110.00, icon: 'sniper' },
-            { id: 'ak47_asiimov', name: 'AK-47 | Asiimov', rarity: 'classified', price: 95.00, icon: 'rifle' },
-            { id: 'deagle_printstream', name: 'Desert Eagle | Printstream', rarity: 'classified', price: 84.00, icon: 'pistol' },
-            { id: 'ak47_empress', name: 'AK-47 | The Empress', rarity: 'classified', price: 89.00, icon: 'rifle' },
-            { id: 'm4a4_howl', name: 'M4A4 | Howl', rarity: 'classified', price: 420.00, icon: 'rifle' },
-            { id: 'awp_gungnir', name: 'AWP | Gungnir', rarity: 'classified', price: 850.00, icon: 'sniper' },
-
-            // Standard Knives & Gloves ($300 - $1200)
-            { id: 'knife_karambit_doppler', name: '★ Karambit | Doppler', rarity: 'covert', price: 450.00, icon: 'knife' },
-            { id: 'knife_m9_lore', name: '★ M9 Bayonet | Lore', rarity: 'covert', price: 680.00, icon: 'knife' },
-            { id: 'knife_butterfly_fade', name: '★ Butterfly Knife | Fade', rarity: 'covert', price: 1200.00, icon: 'knife' },
-            { id: 'gloves_crimson', name: '★ Sport Gloves | Crimson Hedge', rarity: 'covert', price: 380.00, icon: 'gloves' },
-            { id: 'knife_talon_tiger', name: '★ Talon Knife | Tiger Tooth', rarity: 'covert', price: 520.00, icon: 'knife' },
-            { id: 'gloves_vice', name: '★ Sport Gloves | Vice', rarity: 'covert', price: 950.00, icon: 'gloves' },
-            { id: 'knife_m9_gamma', name: '★ M9 Bayonet | Gamma Doppler', rarity: 'covert', price: 790.00, icon: 'knife' },
-            { id: 'gloves_king_snake', name: '★ Driver Gloves | King Snake', rarity: 'covert', price: 480.00, icon: 'gloves' },
-
-            // --- ULTRA PREMIUM VIP SKINS ($1000 - $5000) ---
-            { id: 'vip_karambit_ch_blue', name: '★ Karambit | Case Hardened Blue Gem', rarity: 'covert', price: 4950.00, icon: 'knife' },
-            { id: 'vip_butterfly_sapphire', name: '★ Butterfly Knife | Doppler Sapphire', rarity: 'covert', price: 4200.00, icon: 'knife' },
-            { id: 'vip_m9_emerald', name: '★ M9 Bayonet | Gamma Doppler Emerald', rarity: 'covert', price: 3800.00, icon: 'knife' },
-            { id: 'vip_awp_dragon_lore', name: 'AWP | Dragon Lore (FN)', rarity: 'covert', price: 3500.00, icon: 'sniper' },
-            { id: 'vip_ak47_wild_lotus', name: 'AK-47 | Wild Lotus (FN)', rarity: 'covert', price: 3100.00, icon: 'rifle' },
-            { id: 'vip_karambit_lore_fn', name: '★ Karambit | Lore (FN)', rarity: 'covert', price: 1850.00, icon: 'knife' },
-            { id: 'vip_gloves_pandora', name: '★ Sport Gloves | Pandoras Box', rarity: 'covert', price: 2900.00, icon: 'gloves' },
-            { id: 'vip_butterfly_ruby', name: '★ Butterfly Knife | Doppler Ruby', rarity: 'covert', price: 3300.00, icon: 'knife' },
-
-            // --- GODLIKE MYTHICAL SKINS ($10,000 - $1,000,000) ---
-            { id: 'god_karambit_387', name: '★ Karambit | CH Blue Gem #387 (StatTrak FN)', rarity: 'godlike', price: 1000000.00, icon: 'knife' },
-            { id: 'god_ak47_661', name: 'AK-47 | CH Blue Gem #661 (StatTrak FN)', rarity: 'godlike', price: 800000.00, icon: 'rifle' },
-            { id: 'god_awp_dlore_souvenir', name: 'Souvenir AWP | Dragon Lore (FN Perfect)', rarity: 'godlike', price: 450000.00, icon: 'sniper' },
-            { id: 'god_m4a4_howl_souvenir', name: 'Souvenir M4A4 | Howl (FN StatTrak)', rarity: 'godlike', price: 150000.00, icon: 'rifle' },
-            { id: 'god_m9_sapphire_stat', name: '★ M9 Bayonet | Doppler Sapphire (ST FN)', rarity: 'godlike', price: 38000.00, icon: 'knife' },
-            { id: 'god_gloves_vice_perfect', name: '★ Sport Gloves | Vice (FN Perfect Centered)', rarity: 'godlike', price: 26000.00, icon: 'gloves' },
-            { id: 'god_butterfly_lore_fn', name: '★ Butterfly Knife | Lore (FN Flawless)', rarity: 'godlike', price: 18000.00, icon: 'knife' },
-            { id: 'god_awp_gungnir_fn', name: 'AWP | Gungnir (FN Souvenir Optic)', rarity: 'godlike', price: 15000.00, icon: 'sniper' }
-        ];
-
-        // Unique Procedural SVGs
-        function getSkinSvg(type, color = '#ffffff') {
-            const width = 110;
-            const height = 80;
-            let paths = '';
-            
-            if (type === 'rifle') {
-                paths = `
-                    <rect x="15" y="42" width="22" height="10" rx="2" fill="#2d3748" />
-                    <rect x="37" y="44" width="38" height="6" fill="${color}" />
-                    <rect x="75" y="41" width="20" height="12" rx="1" fill="#1a202c" />
-                    <path d="M 15 42 L 5 28 L 5 48 Z" fill="#2d3748" />
-                    <rect x="70" y="53" width="4" height="10" transform="rotate(15, 70, 53)" fill="#2d3748" />
-                    <rect x="42" y="38" width="10" height="3" fill="#1a202c" />
-                    <rect x="58" y="36" width="12" height="5" fill="${color}" />
-                    <path d="M 50 50 L 46 68 L 54 68 L 56 50 Z" fill="#1a202c" />
-                `;
-            } else if (type === 'sniper') {
-                paths = `
-                    <path d="M 10 50 L 5 32 L 20 32 L 35 45 Z" fill="#2d3748" />
-                    <rect x="30" y="42" width="45" height="11" fill="${color}" />
-                    <rect x="38" y="30" width="30" height="6" rx="1" fill="#1a202c" />
-                    <rect x="35" y="36" width="4" height="6" fill="#1a202c" />
-                    <rect x="64" y="36" width="4" height="6" fill="#1a202c" />
-                    <rect x="75" y="45" width="30" height="4" fill="#1a202c" />
-                    <rect x="105" y="43" width="5" height="8" rx="1" fill="#4a5568" />
-                    <line x1="68" y1="53" x2="74" y2="68" stroke="#1a202c" stroke-width="2" />
-                    <path d="M 40 53 L 36 65 L 42 65 Z" fill="#1a202c" />
-                `;
-            } else if (type === 'pistol') {
-                paths = `
-                    <rect x="35" y="35" width="45" height="14" rx="2" fill="${color}" />
-                    <rect x="32" y="42" width="50" height="4" fill="#1a202c" />
-                    <rect x="65" y="49" width="12" height="25" transform="rotate(-15, 65, 49)" fill="#2d3748" />
-                    <rect x="52" y="49" width="6" height="8" fill="#1a202c" />
-                `;
-            } else if (type === 'knife') {
-                paths = `
-                    <path d="M 35 44 C 45 42, 70 34, 85 24 C 70 42, 50 48, 35 46 Z" fill="url(#bladeGrad)" />
-                    <path d="M 15 54 L 35 44 L 40 48 L 20 58 Z" fill="#2d3748" />
-                    <circle cx="15" cy="54" r="8" fill="transparent" stroke="#1a202c" stroke-width="4" />
-                `;
-            } else if (type === 'gloves') {
-                paths = `
-                    <rect x="25" y="30" width="22" height="30" rx="6" fill="${color}" />
-                    <rect x="22" y="40" width="8" height="15" rx="2" fill="#1a202c" />
-                    <rect x="55" y="30" width="22" height="30" rx="6" fill="${color}" fill-opacity="0.9" />
-                    <rect x="74" y="40" width="8" height="15" rx="2" fill="#1a202c" />
-                    <line x1="30" y1="45" x2="42" y2="45" stroke="#1a202c" stroke-width="3" />
-                    <line x1="60" y1="45" x2="72" y2="45" stroke="#1a202c" stroke-width="3" />
-                `;
-            }
-            
-            return `
-                <svg viewBox="0 0 ${width} ${height}" class="w-full h-full drop-shadow-[0_4px_8px_rgba(0,0,0,0.6)]">
-                    <defs>
-                        <linearGradient id="bladeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="${color}" />
-                            <stop offset="50%" stop-color="#b0c4de" />
-                            <stop offset="100%" stop-color="#1a202c" />
-                        </linearGradient>
-                    </defs>
-                    <g>${paths}</g>
-                </svg>
-            `;
-        }
-
-        // Expanded 15 Cases Database + 1 Custom VIP Case + 1 Custom Godlike Case = 17 Cases
-        const CASES = [
-            {
-                id: 'recoil',
-                name: 'Recoil Case',
-                price: 2.50,
-                desc: 'Классический армейский кейс',
-                odds: { common: 0.70, uncommon: 0.20, rare: 0.07, classified: 0.025, covert: 0.005, godlike: 0.00 }
-            },
-            {
-                id: 'dreams_nightmares',
-                name: 'Dreams & Nightmares',
-                price: 5.00,
-                desc: 'Шансы на тайное оружие повышены',
-                odds: { common: 0.50, uncommon: 0.30, rare: 0.14, classified: 0.05, covert: 0.01, godlike: 0.00 }
-            },
-            {
-                id: 'revolution',
-                name: 'Revolution Case',
-                price: 12.00,
-                desc: 'Отличные шансы на AK-47 и AWP',
-                odds: { common: 0.35, uncommon: 0.35, rare: 0.20, classified: 0.07, covert: 0.03, godlike: 0.00 }
-            },
-            {
-                id: 'fracture',
-                name: 'Fracture Case',
-                price: 4.20,
-                desc: 'Сбалансированное количество пистолетов',
-                odds: { common: 0.65, uncommon: 0.22, rare: 0.09, classified: 0.035, covert: 0.005, godlike: 0.00 }
-            },
-            {
-                id: 'broken_fang',
-                name: 'Broken Fang Case',
-                price: 15.00,
-                desc: 'Операция «Сломанный клык»',
-                odds: { common: 0.40, uncommon: 0.30, rare: 0.20, classified: 0.07, covert: 0.03, godlike: 0.00 }
-            },
-            {
-                id: 'riptide',
-                name: 'Operation Riptide',
-                price: 35.00,
-                desc: 'Премиум коллекция тайных ножей',
-                odds: { common: 0.15, uncommon: 0.25, rare: 0.35, classified: 0.18, covert: 0.07, godlike: 0.00 }
-            },
-            {
-                id: 'glove_exclusive',
-                name: 'Glove & Special Case',
-                price: 120.00,
-                desc: 'Редкие перчатки и классические ножи',
-                odds: { common: 0.00, uncommon: 0.00, rare: 0.35, classified: 0.45, covert: 0.20, godlike: 0.00 }
-            },
-            {
-                id: 'clutch',
-                name: 'Clutch Case',
-                price: 3.50,
-                desc: 'Популярный бюджетный выбор',
-                odds: { common: 0.72, uncommon: 0.18, rare: 0.07, classified: 0.024, covert: 0.006, godlike: 0.00 }
-            },
-            {
-                id: 'prism',
-                name: 'Prisma 2 Case',
-                price: 4.80,
-                desc: 'Яркие скины в неоновом оформлении',
-                odds: { common: 0.60, uncommon: 0.25, rare: 0.11, classified: 0.03, covert: 0.01, godlike: 0.00 }
-            },
-            {
-                id: 'phoenix',
-                name: 'Operation Phoenix',
-                price: 8.50,
-                desc: 'Исторический кейс с винтажными ножами',
-                odds: { common: 0.52, uncommon: 0.28, rare: 0.14, classified: 0.045, covert: 0.015, godlike: 0.00 }
-            },
-            {
-                id: 'shadow',
-                name: 'Shadow Case',
-                price: 6.00,
-                desc: 'Включает скорострельные пистолеты-пулеметы',
-                odds: { common: 0.58, uncommon: 0.26, rare: 0.12, classified: 0.032, covert: 0.008, godlike: 0.00 }
-            },
-            {
-                id: 'huntsman',
-                name: 'Huntsman Weapon Case',
-                price: 18.00,
-                desc: 'Охотничья серия классических винтовок',
-                odds: { common: 0.38, uncommon: 0.32, rare: 0.18, classified: 0.08, covert: 0.04, godlike: 0.00 }
-            },
-            {
-                id: 'falchion',
-                name: 'Falchion Case',
-                price: 7.20,
-                desc: 'Высокие шансы на классические ножи',
-                odds: { common: 0.55, uncommon: 0.27, rare: 0.13, classified: 0.04, covert: 0.01, godlike: 0.00 }
-            },
-            {
-                id: 'wildfire',
-                name: 'Operation Wildfire',
-                price: 25.00,
-                desc: 'Элитный кейс запечатанного оружия',
-                odds: { common: 0.25, uncommon: 0.35, rare: 0.25, classified: 0.11, covert: 0.04, godlike: 0.00 }
-            },
-            {
-                id: 'chroma_3',
-                name: 'Chroma 3 Case',
-                price: 10.50,
-                desc: 'Уникальные металлические расцветки',
-                odds: { common: 0.45, uncommon: 0.33, rare: 0.16, classified: 0.05, covert: 0.01, godlike: 0.00 }
-            },
-            // --- EXCLUSIVE VIP CASE ---
-            {
-                id: 'vip_elite_knives',
-                name: '★ VIP Elite Case',
-                price: 450.00,
-                desc: 'Только ножи от $1,000 до $5,000. Требуется статус VIP',
-                odds: { common: 0.00, uncommon: 0.00, rare: 0.00, classified: 0.00, covert: 1.00, godlike: 0.00 },
-                isVipOnly: true
-            },
-            // --- EXCLUSIVE GODLIKE CASE ---
-            {
-                id: 'godlike_premium_case',
-                name: '★ Godlike Premium Case',
-                price: 25000.00,
-                desc: 'Величайший Космический Кейс. Дроп от $10,000 до $1,000,000! Требуется PremiumVip',
-                odds: { common: 0.00, uncommon: 0.00, rare: 0.00, classified: 0.00, covert: 0.00, godlike: 1.00 },
-                isPremiumOnly: true
-            }
-        ];
-
-        // State variables
-        let balance = 250.00;
-        let inventory = [];
-        let activePage = 'cases';
-        let rollingCase = null;
-        let isSpinning = false;
-        let wonSkinPending = null;
-        let isVipActive = false; 
-        let isPremiumVipActive = false; // Premium VIP State (x4 multiplier!)
-
-        // Upgrader & Contract State
-        let upgraderSource = null;
-        let upgraderTarget = null;
-        let isUpgrading = false;
-        let selectedContractItems = []; 
-
-        // Initialize App
-        window.addEventListener('load', () => {
-            renderCases();
-            updateBalanceUI();
-            updateInventoryUI();
-            
-            document.body.addEventListener('touchstart', () => {
-                if (audioCtx.state === 'suspended') audioCtx.resume();
-            }, { once: true });
-        });
-
-        // TOAST SYSTEM (Sleek Dynamic Island Notifications on top)
-        function showToast(message, type = 'info') {
-            const island = document.getElementById('dynamic-island');
-            const compact = document.getElementById('island-compact');
-            const expanded = document.getElementById('island-expanded');
-            const titleSpan = document.getElementById('island-title');
-            const msgSpan = document.getElementById('island-message');
-            const icon = document.getElementById('island-icon');
-            const iconBg = document.getElementById('island-icon-bg');
-
-            // Set styling based on type
-            let iconClass = 'fa-solid fa-bell';
-            let bgStyle = 'bg-gray-800';
-            let typeTitle = 'Инфо';
-
-            if (type === 'success') {
-                iconClass = 'fa-solid fa-circle-check';
-                bgStyle = 'bg-emerald-500';
-                typeTitle = 'Успех';
-            } else if (type === 'error') {
-                iconClass = 'fa-solid fa-circle-exclamation';
-                bgStyle = 'bg-red-500';
-                typeTitle = 'Ошибка';
-            } else if (type === 'warn') {
-                iconClass = 'fa-solid fa-triangle-exclamation';
-                bgStyle = 'bg-yellow-500 text-gray-950';
-                typeTitle = 'Предупреждение';
-            } else if (type === 'vip') {
-                iconClass = 'fa-solid fa-crown';
-                bgStyle = 'bg-gradient-to-r from-yellow-400 to-amber-600 text-black';
-                typeTitle = 'VIP Статус';
-            } else if (type === 'premium') {
-                iconClass = 'fa-solid fa-gem';
-                bgStyle = 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white';
-                typeTitle = 'Premium VIP';
+        // Смена состояния Dynamic Island
+        function triggerState(state) {
+            if (currentState === state) {
+                // Если повторно нажимаем на ту же кнопку - сворачиваем
+                resetIsland();
+                return;
             }
 
-            icon.className = iconClass;
-            iconBg.className = `w-10 h-10 rounded-full flex items-center justify-center text-white shadow-md text-sm ${bgStyle}`;
-            titleSpan.innerText = typeTitle;
-            msgSpan.innerText = message;
-
-            // Expand Island with native IOS elastic feeling
-            compact.classList.add('hidden', 'opacity-0');
-            expanded.classList.remove('hidden');
-            island.classList.add('expanded');
+            // Убираем старые классы состояния
+            island.classList.remove('island-compact', 'island-music', 'island-call', 'island-faceid', 'island-charging', 'island-notification');
             
+            // Скрываем весь контент
+            Object.values(contents).forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
+            });
+
+            // Задаем новое состояние
+            currentState = state;
+            
+            // Применяем размеры
+            island.classList.add(`island-${state}`);
+
+            // Показываем нужный контент после небольшой задержки для сглаживания анимации
             setTimeout(() => {
-                expanded.classList.add('opacity-100');
+                if (state === 'compact') {
+                    contents[state].classList.add('flex');
+                } else if (state === 'faceid') {
+                    contents[state].classList.add('flex');
+                } else if (state === 'notification') {
+                    contents[state].classList.remove('hidden'); // Не флекс для кастомной сетки
+                } else {
+                    contents[state].classList.remove('hidden');
+                    contents[state].classList.add('flex');
+                }
             }, 100);
 
-            // Auto collapse after 4.5 seconds
-            window.islandTimer = setTimeout(() => {
-                dismissDynamicIsland();
-            }, 4500);
-        }
-
-        function dismissDynamicIsland() {
-            if (window.islandTimer) clearTimeout(window.islandTimer);
-            const island = document.getElementById('dynamic-island');
-            const compact = document.getElementById('island-compact');
-            const expanded = document.getElementById('island-expanded');
-
-            expanded.classList.remove('opacity-100');
-            island.classList.remove('expanded');
-            
-            setTimeout(() => {
-                expanded.classList.add('hidden');
-                compact.classList.remove('hidden', 'opacity-0');
-            }, 300);
-        }
-
-        // --- Settings Management & iOS 26 toggle ---
-        function openSettings() {
-            document.getElementById('sync-user-id').value = userId;
-            document.getElementById('settings-modal').classList.remove('hidden');
-        }
-
-        function closeSettings() {
-            document.getElementById('settings-modal').classList.add('hidden');
-        }
-
-        function toggleIosInterface() {
-            const isChecked = document.getElementById('ios-toggle').checked;
-            if (isChecked) {
-                document.body.classList.add('ios-mode');
-                localStorage.setItem('cs2_sim_ios_mode', 'true');
-                showToast('Интерфейс iOS 26 успешно активирован!', 'success');
-            } else {
-                document.body.classList.remove('ios-mode');
-                localStorage.setItem('cs2_sim_ios_mode', 'false');
-            }
-        }
-
-        // Restore iOS settings on load
-        if (localStorage.getItem('cs2_sim_ios_mode') === 'true') {
-            document.addEventListener('DOMContentLoaded', () => {
-                document.getElementById('ios-toggle').checked = true;
-                document.body.classList.add('ios-mode');
-            });
-        }
-
-        // Copy User ID to Clipboard
-        function copyUserId() {
-            const copyText = document.getElementById('sync-user-id');
-            copyText.select();
-            copyText.setSelectionRange(0, 99999);
-            try {
-                document.execCommand('copy');
-                showToast('Код синхронизации скопирован!', 'success');
-            } catch (err) {
-                showToast('Не удалось скопировать.', 'error');
-            }
-        }
-
-        // --- Cloud Save / Load System ---
-        async function saveProgressToCloud() {
-            localStorage.setItem('cs2_sim_local_balance', balance.toString());
-            localStorage.setItem('cs2_sim_local_inventory', JSON.stringify(inventory));
-            localStorage.setItem('cs2_sim_local_vip', isVipActive.toString());
-            localStorage.setItem('cs2_sim_local_premium', isPremiumVipActive.toString());
-
-            if (!isCloudActive || !db) return;
-            try {
-                const docRef = firebase.firestore().doc(`artifacts/${appId}/public/data/usersProgress/${userId}`);
-                await docRef.set({
-                    userId: userId,
-                    balance: balance,
-                    inventory: inventory,
-                    isVipActive: isVipActive,
-                    isPremiumVipActive: isPremiumVipActive,
-                    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-                }, { merge: true });
-            } catch (err) {
-                console.error("Firestore save error: ", err);
-            }
-        }
-
-        async function loadProgressFromCloud() {
-            if (!isCloudActive || !db) {
-                loadLocalBackup();
-                return;
-            }
-            try {
-                const docRef = firebase.firestore().doc(`artifacts/${appId}/public/data/usersProgress/${userId}`);
-                const docSnap = await docRef.get();
-                if (docSnap.exists) {
-                    const data = docSnap.data();
-                    balance = typeof data.balance === 'number' ? data.balance : 250.00;
-                    inventory = Array.isArray(data.inventory) ? data.inventory : [];
-                    isVipActive = !!data.isVipActive;
-                    isPremiumVipActive = !!data.isPremiumVipActive;
-                    
-                    if (isPremiumVipActive) {
-                        activatePremiumVipStatus(false);
-                    } else if (isVipActive) {
-                        activateVipStatus(false);
+            // Обработка особых условий
+            if (state === 'charging') {
+                if (!isPowerCharging) {
+                    isPowerCharging = true;
+                    batteryLevel = Math.min(100, batteryLevel + 1);
+                    document.getElementById('statusBarBattery').textContent = batteryLevel;
+                    document.getElementById('chargingPercent').textContent = `${batteryLevel}%`;
+                }
+                showToast('Зарядное устройство подключено');
+            } else if (state === 'faceid') {
+                showToast('Сканирование лица Face ID...');
+                // Автоматическое сворачивание Face ID через 3 секунды
+                setTimeout(() => {
+                    if (currentState === 'faceid') {
+                        showToast('Успешно разблокировано!');
+                        resetIsland();
                     }
-                    
-                    updateBalanceUI();
-                    updateInventoryUI();
-                    renderCases();
-                } else {
-                    loadLocalBackup();
-                }
-            } catch (err) {
-                console.error("Firestore load error: ", err);
-                loadLocalBackup();
+                }, 3000);
+            } else if (state === 'music') {
+                showToast('Сейчас играет: The Weeknd - After Hours');
+            } else if (state === 'call') {
+                showToast('Входящий вызов от: Дмитрий Морозов');
+            } else if (state === 'notification') {
+                showToast('Новое уведомление от Telegram');
             }
         }
 
-        async function restoreUserProgress() {
-            const targetId = document.getElementById('sync-restore-id').value.trim();
-            if (!targetId) {
-                showToast('Пожалуйста, введите корректный код!', 'warn');
-                return;
-            }
-
-            if (!isCloudActive || !db) {
-                showToast('Облако сейчас недоступно.', 'error');
-                return;
-            }
-
-            try {
-                const docRef = firebase.firestore().doc(`artifacts/${appId}/public/data/usersProgress/${targetId}`);
-                const docSnap = await docRef.get();
-                if (docSnap.exists) {
-                    const data = docSnap.data();
-                    userId = targetId;
-                    localStorage.setItem('cs2_sim_user_id', userId);
-                    document.getElementById('sync-user-id').value = userId;
-
-                    balance = data.balance;
-                    inventory = data.inventory || [];
-                    isPremiumVipActive = !!data.isPremiumVipActive;
-                    isVipActive = !!data.isVipActive;
-
-                    if (isPremiumVipActive) {
-                        activatePremiumVipStatus(true);
-                    } else if (isVipActive) {
-                        activateVipStatus(true);
-                    } else {
-                        document.getElementById('header-vip-tag').classList.add('hidden');
-                        document.getElementById('header-premium-tag').classList.add('hidden');
-                        document.getElementById('clicker-bonus-text').innerText = '$50';
-                    }
-
-                    updateBalanceUI();
-                    updateInventoryUI();
-                    renderCases();
-                    saveProgressToCloud();
-                    showToast('Прогресс успешно синхронизирован!', 'success');
-                    closeSettings();
-                } else {
-                    showToast('Указанный код синхронизации не найден.', 'error');
-                }
-            } catch (err) {
-                showToast('Ошибка при синхронизации прогресса.', 'error');
-            }
-        }
-
-        function loadLocalBackup() {
-            const localBal = localStorage.getItem('cs2_sim_local_balance');
-            const localInv = localStorage.getItem('cs2_sim_local_inventory');
-            const localVip = localStorage.getItem('cs2_sim_local_vip');
-            const localPremium = localStorage.getItem('cs2_sim_local_premium');
-
-            if (localBal !== null) balance = parseFloat(localBal);
-            if (localInv !== null) inventory = JSON.parse(localInv);
-            if (localPremium === 'true') {
-                activatePremiumVipStatus(false);
-            } else if (localVip === 'true') {
-                activateVipStatus(false);
-            }
-            updateBalanceUI();
-        }
-
-        // Apply Promocode
-        function applyPromocode() {
-            const input = document.getElementById('promo-input');
-            const code = input.value.trim();
-
-            if (!code) {
-                showToast('Введите промокод!', 'warn');
-                return;
-            }
-
-            if (code === 'PremiumVip') {
-                if (isPremiumVipActive) {
-                    showToast('Премиум VIP уже активирован!', 'warn');
-                } else {
-                    activatePremiumVipStatus(true);
-                }
-            } else if (code === 'Vip') {
-                if (isVipActive || isPremiumVipActive) {
-                    showToast('VIP или более высокий статус уже активен!', 'warn');
-                } else {
-                    activateVipStatus(true);
-                }
-            } else {
-                showToast('Неверный промокод!', 'error');
-            }
-
-            input.value = '';
-        }
-
-        // Active Vip Setup
-        function activateVipStatus(showPromoModal = true) {
-            isVipActive = true;
-            document.getElementById('header-vip-tag').classList.remove('hidden');
-            document.getElementById('clicker-bonus-text').innerText = '$100';
+        // Сбросить до компактного состояния
+        function resetIsland() {
+            island.classList.remove('island-music', 'island-call', 'island-faceid', 'island-charging', 'island-notification');
+            island.classList.add('island-compact');
             
-            if (showPromoModal) {
-                playVipSound();
-                openVipModal();
-                showToast('VIP статус активирован! Шансы x2!', 'vip');
-            }
-
-            document.getElementById('vip-odds-indicator').innerHTML = '<i class="fa-solid fa-crown mr-1"></i><span class="font-bold">VIP: Шансы на нож x2!</span>';
-
-            if (activePage === 'upgrader') {
-                calculateUpgradeOdds();
-            }
-            renderCases(); 
-            saveProgressToCloud();
-        }
-
-        // Active Premium Vip Setup (x4 Boosts!)
-        function activatePremiumVipStatus(showPromoModal = true) {
-            isPremiumVipActive = true;
-            isVipActive = true;
-            
-            document.getElementById('header-vip-tag').classList.add('hidden'); // Hide lower VIP
-            document.getElementById('header-premium-tag').classList.remove('hidden');
-            document.getElementById('clicker-bonus-text').innerText = '$200';
-            
-            if (showPromoModal) {
-                playPremiumVipSound();
-                openPremiumVipModal();
-                showToast('PREMIUM VIP статус активирован! Шансы x4!', 'premium');
-            }
-
-            document.getElementById('vip-odds-indicator').innerHTML = '<i class="fa-solid fa-gem mr-1"></i><span class="font-bold">PREMIUM VIP: Шансы на редкий дроп x4! Доступны все кейсы!</span>';
-
-            if (activePage === 'upgrader') {
-                calculateUpgradeOdds();
-            }
-            renderCases(); 
-            saveProgressToCloud();
-        }
-
-        function openVipModal() {
-            document.getElementById('vip-modal').classList.remove('hidden');
-        }
-
-        function closeVipModal() {
-            document.getElementById('vip-modal').classList.add('hidden');
-        }
-
-        function openPremiumVipModal() {
-            document.getElementById('premium-vip-modal').classList.remove('hidden');
-        }
-
-        function closePremiumVipModal() {
-            document.getElementById('premium-vip-modal').classList.add('hidden');
-        }
-
-        // Clicker cash generator
-        function addFreeCash() {
-            let rewardAmount = 50;
-            if (isPremiumVipActive) {
-                rewardAmount = 200;
-            } else if (isVipActive) {
-                rewardAmount = 100;
-            }
-            balance += rewardAmount;
-            updateBalanceUI();
-            saveProgressToCloud();
-            showToast(`Начислено +$${rewardAmount.toFixed(2)}`, 'success');
-            playTickSound();
-        }
-
-        function updateBalanceUI() {
-            document.getElementById('balance-val').innerText = `$${balance.toFixed(2)}`;
-            const worth = inventory.reduce((total, s) => total + s.price, 0);
-            document.getElementById('inv-worth').innerText = `$${worth.toFixed(2)}`;
-            document.getElementById('inv-count').innerText = inventory.length;
-        }
-
-        function switchTab(tabId) {
-            if (isSpinning || isUpgrading) {
-                showToast('Пожалуйста, подождите завершения операции', 'warn');
-                return;
-            }
-            
-            document.getElementById('page-cases').classList.add('hidden');
-            document.getElementById('page-inventory').classList.add('hidden');
-            document.getElementById('page-upgrader').classList.add('hidden');
-            document.getElementById('page-contracts').classList.add('hidden');
-            
-            document.getElementById(`page-${tabId}`).classList.remove('hidden');
-
-            ['cases', 'inventory', 'upgrader', 'contracts'].forEach(t => {
-                const btn = document.getElementById(`tab-${t}`);
-                if (t === tabId) {
-                    btn.classList.add('text-yellow-500', 'nav-active-glow');
-                    btn.classList.remove('text-gray-400');
-                } else {
-                    btn.classList.add('text-gray-400');
-                    btn.classList.remove('text-yellow-500', 'nav-active-glow');
-                }
+            Object.values(contents).forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('flex');
             });
-
-            activePage = tabId;
-
-            if (tabId === 'inventory') {
-                updateInventoryUI();
-            } else if (tabId === 'upgrader') {
-                resetUpgrader();
-            } else if (tabId === 'contracts') {
-                resetContracts();
-            }
+            contents.compact.classList.add('flex');
+            currentState = 'compact';
         }
 
-        // --- CASES PAGE LOGIC ---
-        function renderCases() {
-            const grid = document.getElementById('cases-grid');
-            grid.innerHTML = '';
-            
-            CASES.forEach(c => {
-                const card = document.createElement('div');
-                const isVipCase = !!c.isVipOnly;
-                const isPremiumCase = !!c.isPremiumOnly;
-                
-                let lockStatusHtml = '';
-                let cardBorderGradient = 'border-gray-800 hover:border-gray-700';
+        // Клик по самому острову (если он развернут - сворачивает)
+        function handleIslandClick(event) {
+            // Если мы нажали на кнопки внутри острова, то не сворачиваем
+            if (event.target.closest('button')) return;
 
-                if (isVipCase) {
-                    if (!isVipActive) {
-                        lockStatusHtml = `<div class="absolute inset-0 bg-black/85 backdrop-blur-[1px] rounded-2xl flex flex-col items-center justify-center p-3 text-center z-10">
-                            <i class="fa-solid fa-lock text-yellow-500 text-xl mb-1"></i>
-                            <span class="text-[9px] font-bold text-yellow-500 uppercase tracking-widest leading-tight">★ VIP ONLY ★</span>
-                            <span class="text-[8px] text-gray-400 mt-1">Промокод "Vip"</span>
-                        </div>`;
-                        cardBorderGradient = 'border-yellow-600/30';
-                    } else {
-                        cardBorderGradient = 'border-yellow-500/80 bg-gradient-to-br from-yellow-950/20 to-amber-950/20';
-                        lockStatusHtml = `<span class="absolute top-2 left-2 bg-yellow-500 text-black text-[8px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider z-10"><i class="fa-solid fa-crown mr-0.5"></i>VIP Доступ</span>`;
-                    }
-                }
-
-                if (isPremiumCase) {
-                    if (!isPremiumVipActive) {
-                        lockStatusHtml = `<div class="absolute inset-0 bg-black/85 backdrop-blur-[1px] rounded-2xl flex flex-col items-center justify-center p-3 text-center z-10">
-                            <i class="fa-solid fa-gem text-purple-400 text-xl mb-1"></i>
-                            <span class="text-[9px] font-bold text-purple-400 uppercase tracking-widest leading-tight">★ PREMIUM ONLY ★</span>
-                            <span class="text-[8px] text-gray-400 mt-1">Промокод "PremiumVip"</span>
-                        </div>`;
-                        cardBorderGradient = 'border-purple-600/30';
-                    } else {
-                        cardBorderGradient = 'border-purple-500/80 bg-gradient-to-br from-purple-950/30 to-indigo-950/30 shadow-[0_0_15px_rgba(147,51,234,0.15)]';
-                        lockStatusHtml = `<span class="absolute top-2 left-2 bg-purple-500 text-white text-[8px] font-extrabold px-1.5 py-0.5 rounded-md uppercase tracking-wider z-10 animate-pulse"><i class="fa-solid fa-gem mr-0.5"></i>PREMIUM</span>`;
-                    }
-                }
-
-                card.className = `bg-gray-900 border ${cardBorderGradient} rounded-2xl p-3 flex flex-col justify-between transition active:scale-[0.98] cursor-pointer relative overflow-hidden h-[215px] shadow-md`;
-                card.onclick = () => {
-                    if (isVipCase && !isVipActive) {
-                        showToast('Нужен статус VIP! Используйте промокод Vip.', 'warn');
-                        return;
-                    }
-                    if (isPremiumCase && !isPremiumVipActive) {
-                        showToast('Нужен статус PREMIUM VIP! Код: PremiumVip.', 'warn');
-                        return;
-                    }
-                    selectCase(c.id);
-                };
-
-                let containerColor = 'from-yellow-600/20 to-yellow-800/10 border-yellow-500/20';
-                let iconClass = 'fa-lock';
-                if (isVipCase) {
-                    containerColor = 'from-yellow-500/30 to-amber-800/10 border-yellow-500/30 animate-pulse';
-                    iconClass = 'fa-crown text-yellow-400';
-                }
-                if (isPremiumCase) {
-                    containerColor = 'from-purple-500/30 to-indigo-800/10 border-purple-500/30';
-                    iconClass = 'fa-gem text-purple-400';
-                }
-
-                card.innerHTML = `
-                    ${lockStatusHtml}
-                    <div class="space-y-1 z-0">
-                        <div class="flex justify-between items-start">
-                            <h4 class="font-extrabold text-gray-100 header-font text-xs leading-tight line-clamp-2 pr-1">${c.name}</h4>
-                            <span class="text-yellow-500 font-extrabold text-xs header-font bg-yellow-500/10 border border-yellow-500/20 rounded-md px-1.5 py-0.5 whitespace-nowrap">$${c.price.toFixed(2)}</span>
-                        </div>
-                        <p class="text-[10px] text-gray-400 leading-snug line-clamp-2">${c.desc}</p>
-                    </div>
-                    
-                    <div class="my-2 flex justify-center items-center z-0">
-                        <div class="relative w-16 h-12 bg-gradient-to-br ${containerColor} border rounded flex items-center justify-center shadow-lg">
-                            <div class="absolute inset-x-2 top-0 h-1 bg-yellow-500/50"></div>
-                            <div class="w-4 h-3 bg-yellow-500/10 border border-yellow-500/30 rounded flex items-center justify-center">
-                                <i class="fa-solid ${iconClass} text-[8px]"></i>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button class="w-full ${isPremiumCase ? 'bg-gradient-to-r from-purple-500 to-indigo-600 text-white' : (isVipCase ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 text-black' : 'bg-gray-800 text-gray-200')} hover:opacity-90 text-xs font-bold py-1.5 rounded-lg tracking-wider uppercase transition z-0">
-                        Выбрать
-                    </button>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function selectCase(caseId) {
-            rollingCase = CASES.find(c => c.id === caseId);
-            document.getElementById('rolling-case-title').innerText = rollingCase.name;
-            document.getElementById('spin-cost').innerText = `$${rollingCase.price.toFixed(2)}`;
-            document.getElementById('roller-area').classList.remove('hidden');
-            
-            prepareRoulette();
-            document.getElementById('roller-area').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function closeRoller() {
-            if (isSpinning) return;
-            document.getElementById('roller-area').classList.add('hidden');
-            rollingCase = null;
-        }
-
-        function rollSkin(caseObj) {
-            // Check if rolling exclusive VIP/Godlike cases
-            if (caseObj.id === 'vip_elite_knives') {
-                const vipPool = SKINS_DB.filter(s => s.id.startsWith('vip_'));
-                const chosenBase = vipPool[Math.floor(Math.random() * vipPool.length)];
-                const floatVal = Math.random() * 0.08; 
-                const wear = floatVal < 0.07 ? 'Прямо с завода (FN)' : 'Немного поношенное (MW)';
-                const wearMult = floatVal < 0.07 ? 1.15 : 1.00;
-                
-                return {
-                    ...chosenBase,
-                    float: floatVal.toFixed(4),
-                    wear: wear,
-                    price: parseFloat((chosenBase.price * wearMult).toFixed(2))
-                };
-            }
-
-            if (caseObj.id === 'godlike_premium_case') {
-                // Returns only Legendary Godlike mythical items ($10,000 - $1,000,000)
-                const godPool = SKINS_DB.filter(s => s.rarity === 'godlike');
-                const chosenBase = godPool[Math.floor(Math.random() * godPool.length)];
-                const floatVal = Math.random() * 0.05; // extremely low float
-                const wear = 'Прямо с завода (FN)';
-                
-                return {
-                    ...chosenBase,
-                    float: floatVal.toFixed(4),
-                    wear: wear,
-                    price: chosenBase.price
-                };
-            }
-
-            const rand = Math.random();
-            let accumulated = 0;
-            let selectedRarity = 'common';
-
-            // Boost rare drop odds: VIP gets x2, PremiumVIP gets x4!
-            let oddsCopy = { ...caseObj.odds };
-            const multiplier = isPremiumVipActive ? 4 : (isVipActive ? 2 : 1);
-
-            if (multiplier > 1) {
-                const covertBoost = oddsCopy.covert * multiplier;
-                const classBoost = oddsCopy.classified * multiplier;
-                const totalExtra = (covertBoost - oddsCopy.covert) + (classBoost - oddsCopy.classified);
-                
-                if (oddsCopy.common >= totalExtra) {
-                    oddsCopy.covert = covertBoost;
-                    oddsCopy.classified = classBoost;
-                    oddsCopy.common -= totalExtra;
-                }
-            }
-
-            for (const [rarity, prob] of Object.entries(oddsCopy)) {
-                accumulated += prob;
-                if (rand <= accumulated) {
-                    selectedRarity = rarity;
-                    break;
-                }
-            }
-
-            // Exclude God/VIP items from standard cases
-            const candidates = SKINS_DB.filter(s => s.rarity === selectedRarity && !s.id.startsWith('vip_') && !s.id.startsWith('god_'));
-            const chosenBase = candidates.length > 0 ? candidates[Math.floor(Math.random() * candidates.length)] : SKINS_DB[0];
-            
-            const float = Math.random();
-            let wear = 'Поношенное';
-            let wearMult = 0.85;
-
-            if (float < 0.07) { wear = 'Прямо с завода (FN)'; wearMult = 1.25; }
-            else if (float < 0.15) { wear = 'Немного поношенное (MW)'; wearMult = 1.05; }
-            else if (float < 0.38) { wear = 'После полевых испытаний (FT)'; wearMult = 0.95; }
-            else if (float < 0.45) { wear = 'Поношенное (WW)'; wearMult = 0.80; }
-            else { wear = 'Закаленное в боях (BS)'; wearMult = 0.65; }
-
-            const calculatedPrice = parseFloat((chosenBase.price * wearMult).toFixed(2));
-
-            return {
-                ...chosenBase,
-                float: float.toFixed(4),
-                wear: wear,
-                price: calculatedPrice
-            };
-        }
-
-        function prepareRoulette() {
-            const track = document.getElementById('roulette-track');
-            track.style.transition = 'none';
-            track.style.transform = 'translateX(0px)';
-            track.innerHTML = '';
-
-            const totalSkinsInStrip = 35;
-            for (let i = 0; i < totalSkinsInStrip; i++) {
-                const tempSkin = rollSkin(rollingCase);
-                const card = createStripCard(tempSkin);
-                track.appendChild(card);
-            }
-        }
-
-        function createStripCard(skin) {
-            const card = document.createElement('div');
-            card.className = `w-[100px] h-[130px] border-b-4 shrink-0 flex flex-col items-center justify-center p-2 text-center text-xs select-none rarity-${skin.rarity} relative`;
-            
-            // Format price cleanly
-            let priceStr = skin.price >= 1000 ? `$${(skin.price / 1000).toFixed(0)}K` : `$${skin.price.toFixed(2)}`;
-            if (skin.price >= 100000) priceStr = `$${(skin.price / 1000).toFixed(0)}K`;
-
-            card.innerHTML = `
-                <div class="text-[9px] text-gray-400 truncate max-w-full">${skin.name.split(' | ')[0]}</div>
-                <div class="w-16 h-16 my-1">
-                    ${getSkinSvg(skin.icon, RARITIES[skin.rarity].color)}
-                </div>
-                <div class="font-semibold text-[9px] truncate max-w-full text-white">${skin.name.split(' | ')[1] || skin.name}</div>
-                <div class="text-[9px] font-bold text-yellow-500">${priceStr}</div>
-            `;
-            return card;
-        }
-
-        function startSpin() {
-            if (isSpinning) return;
-            if (balance < rollingCase.price) {
-                showToast('Недостаточно средств! Кликните на баланс или введите промокод.', 'error');
-                return;
-            }
-
-            balance -= rollingCase.price;
-            updateBalanceUI();
-            isSpinning = true;
-            document.getElementById('spin-btn').disabled = true;
-
-            const track = document.getElementById('roulette-track');
-            const items = Array.from(track.children);
-            const winIndex = 28;
-            const winSkin = rollSkin(rollingCase);
-            wonSkinPending = winSkin;
-
-            const newWinCard = createStripCard(winSkin);
-            track.replaceChild(newWinCard, items[winIndex]);
-
-            const itemWidth = 100;
-            const containerWidth = document.querySelector('.roulette-container').clientWidth;
-            const stopPosition = -((winIndex * itemWidth) - (containerWidth / 2) + (itemWidth / 2));
-            const randomOffset = (Math.random() * (itemWidth - 10)) - (itemWidth / 2 - 5);
-            const finalX = stopPosition + randomOffset;
-
-            track.style.transition = 'transform 4.5s cubic-bezier(0.15, 0.85, 0.35, 1)';
-            setTimeout(() => {
-                track.style.transform = `translateX(${finalX}px)`;
-            }, 50);
-
-            let currentTick = 0;
-            const tickInterval = setInterval(() => {
-                if (!isSpinning) {
-                    clearInterval(tickInterval);
-                    return;
-                }
-                const currentX = getTransformX(track);
-                const passedItems = Math.floor(Math.abs(currentX) / itemWidth);
-                if (passedItems > currentTick) {
-                    playTickSound();
-                    currentTick = passedItems;
-                }
-            }, 50);
-
-            setTimeout(() => {
-                clearInterval(tickInterval);
-                showWinModal(winSkin);
-                isSpinning = false;
-                document.getElementById('spin-btn').disabled = false;
-                inventory.push(winSkin);
-                updateBalanceUI();
-                saveProgressToCloud();
-            }, 4600);
-        }
-
-        function getTransformX(element) {
-            const style = window.getComputedStyle(element);
-            const matrix = new WebKitCSSMatrix(style.transform);
-            return matrix.m41;
-        }
-
-        // --- WIN MODAL ---
-        function showWinModal(skin) {
-            const modal = document.getElementById('win-modal');
-            const card = document.getElementById('win-modal-card');
-            
-            document.getElementById('win-rarity-badge').innerText = RARITIES[skin.rarity].badge;
-            document.getElementById('win-rarity-badge').style.borderColor = RARITIES[skin.rarity].color;
-            document.getElementById('win-rarity-badge').style.color = RARITIES[skin.rarity].color;
-            document.getElementById('win-skin-name').innerText = skin.name;
-            document.getElementById('win-skin-float').innerText = `Float: ${skin.float} (${skin.wear})`;
-            document.getElementById('win-skin-price').innerText = `$${skin.price.toLocaleString('ru-RU', { minimumFractionDigits: 2 })}`;
-            document.getElementById('win-skin-icon-container').innerHTML = getSkinSvg(skin.icon, RARITIES[skin.rarity].color);
-            
-            const winGlow = document.getElementById('win-skin-glow');
-            winGlow.className = `w-36 h-36 mx-auto rounded-full flex items-center justify-center mb-4 relative rarity-${skin.rarity}`;
-
-            card.style.borderColor = RARITIES[skin.rarity].color;
-
-            playWinSound(skin.rarity);
-
-            modal.classList.remove('hidden');
-            setTimeout(() => {
-                card.classList.remove('scale-95', 'opacity-0');
-            }, 50);
-        }
-
-        function keepWonSkin() {
-            closeWinModal();
-            showToast('Предмет добавлен на склад!', 'success');
-        }
-
-        function sellWonSkin() {
-            if (!wonSkinPending) return;
-            const idx = inventory.lastIndexOf(wonSkinPending);
-            if (idx > -1) {
-                inventory.splice(idx, 1);
-            }
-            balance += wonSkinPending.price;
-            updateBalanceUI();
-            closeWinModal();
-            saveProgressToCloud();
-            showToast(`Предмет продан за $${wonSkinPending.price.toLocaleString()}`, 'success');
-        }
-
-        function closeWinModal() {
-            const card = document.getElementById('win-modal-card');
-            card.classList.add('scale-95', 'opacity-0');
-            setTimeout(() => {
-                document.getElementById('win-modal').classList.add('hidden');
-                wonSkinPending = null;
-                prepareRoulette();
-            }, 300);
-        }
-
-        // --- INVENTORY ---
-        function updateInventoryUI() {
-            const grid = document.getElementById('inventory-grid');
-            const emptyState = document.getElementById('empty-inventory-state');
-            grid.innerHTML = '';
-
-            if (inventory.length === 0) {
-                emptyState.classList.remove('hidden');
-                return;
+            if (currentState !== 'compact') {
+                resetIsland();
+                showToast('Остров свернут');
             } else {
-                emptyState.classList.add('hidden');
+                // Если кликнули на компактный - активируем фичу Face ID
+                triggerState('faceid');
             }
-
-            inventory.forEach((skin, idx) => {
-                const card = document.createElement('div');
-                card.className = `bg-gray-900 border-b-4 rounded-xl p-2.5 flex flex-col justify-between items-center text-center rarity-${skin.rarity} relative shadow-md`;
-                
-                card.innerHTML = `
-                    <div class="w-full text-right text-[9px] text-gray-500 truncate font-mono" title="${skin.wear}">
-                        ${skin.wear.substring(0, 15)}...
-                    </div>
-                    <div class="w-20 h-20 my-1">
-                        ${getSkinSvg(skin.icon, RARITIES[skin.rarity].color)}
-                    </div>
-                    <div class="font-bold text-xs text-gray-100 truncate w-full" title="${skin.name}">${skin.name.split(' | ')[1] || skin.name}</div>
-                    <div class="text-[10px] text-yellow-500 font-bold mt-1">$${skin.price.toLocaleString('ru-RU')}</div>
-                    
-                    <button onclick="sellInventoryItem(${idx})" class="mt-2 w-full bg-red-950/40 hover:bg-red-900/40 text-red-400 text-[10px] font-bold py-1.5 rounded-lg transition-all">
-                        Продать
-                    </button>
-                `;
-                grid.appendChild(card);
-            });
         }
 
-        function sellInventoryItem(idx) {
-            const skin = inventory[idx];
-            balance += skin.price;
-            inventory.splice(idx, 1);
-            updateBalanceUI();
-            updateInventoryUI();
-            saveProgressToCloud();
-            showToast(`Продано за $${skin.price.toLocaleString()}`, 'success');
+        // Принять вызов
+        function acceptCall() {
+            showToast('Звонок принят. Подключение...');
+            resetIsland();
         }
 
-        function sellAllInventory() {
-            if (inventory.length === 0) {
-                showToast('Ваш инвентарь пуст', 'warn');
-                return;
-            }
-            const worth = inventory.reduce((total, s) => total + s.price, 0);
-            balance += worth;
-            inventory = [];
-            updateBalanceUI();
-            updateInventoryUI();
-            saveProgressToCloud();
-            showToast(`Успешно продано на сумму $${worth.toLocaleString()}`, 'success');
-        }
-
-        // --- UPGRADER PAGE ---
-        function resetUpgrader() {
-            upgraderSource = null;
-            upgraderTarget = null;
-            isUpgrading = false;
+        // Показ тостов (системных логов)
+        let toastTimeout;
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            const toastMsg = document.getElementById('toastMessage');
             
-            renderUpgraderSource();
-            renderUpgraderTarget();
-            
-            document.getElementById('upgrade-chance-percent').innerText = '0%';
-            document.getElementById('upgrade-chance-circle').style.strokeDashoffset = '440';
-            document.getElementById('upgrade-run-btn').disabled = true;
-            document.getElementById('upgrade-run-btn').className = 'w-full py-3.5 px-4 rounded-xl font-bold header-font uppercase tracking-widest text-sm bg-gray-800 text-gray-500 cursor-not-allowed';
-            
-            const ticker = document.getElementById('upgrade-ticker');
-            ticker.style.transition = 'none';
-            ticker.style.transform = 'rotate(0deg)';
-            ticker.classList.add('opacity-0');
+            toastMsg.textContent = message;
+            toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-2');
+            toast.classList.add('opacity-100', 'translate-y-0');
 
-            const multSpan = document.getElementById('upgrade-chance-multiplier');
-            if (isPremiumVipActive) {
-                document.getElementById('upgrade-vip-promo-label').innerHTML = 'Шанс = (Цена Вашего / Цена Цели) <span class="text-purple-400 font-extrabold block md:inline">x4 PREMIUM BOOST</span>';
-                multSpan.innerText = 'x4 Шанс Premium!';
-                multSpan.className = 'text-[9px] text-purple-400 font-extrabold uppercase tracking-wider animate-bounce block';
-            } else if (isVipActive) {
-                document.getElementById('upgrade-vip-promo-label').innerHTML = 'Шанс = (Цена Вашего / Цена Цели) <span class="text-yellow-500 font-bold block md:inline">x2 VIP BOOST</span>';
-                multSpan.innerText = 'x2 Шанс VIP!';
-                multSpan.className = 'text-[9px] text-yellow-500 font-extrabold uppercase tracking-wider animate-bounce block';
-            } else {
-                document.getElementById('upgrade-vip-promo-label').innerText = 'Шанс = Цена Вашего / Цена Цели';
-                multSpan.className = 'hidden';
-            }
-        }
-
-        function renderUpgraderSource() {
-            const container = document.getElementById('upgrader-source-content');
-            if (!upgraderSource) {
-                container.innerHTML = `
-                    <button onclick="openUpgradeSelector('source')" class="border border-dashed border-gray-700 hover:border-yellow-500/50 rounded-2xl w-14 h-14 flex items-center justify-center text-gray-500 hover:text-yellow-500 transition mb-2">
-                        <i class="fa-solid fa-plus text-lg"></i>
-                    </button>
-                    <span class="text-xs text-gray-500">Выбрать</span>
-                `;
-                document.getElementById('upgrader-source-box').className = 'bg-gray-900/50 border border-gray-800 rounded-2xl p-4 flex flex-col items-center justify-between min-h-[170px] text-center';
-            } else {
-                container.innerHTML = `
-                    <div class="w-16 h-16">
-                        ${getSkinSvg(upgraderSource.skin.icon, RARITIES[upgraderSource.skin.rarity].color)}
-                    </div>
-                    <span class="text-[11px] font-bold text-gray-200 mt-1 truncate max-w-full block">${upgraderSource.skin.name.split(' | ')[1] || upgraderSource.skin.name}</span>
-                    <span class="text-xs font-semibold text-yellow-500">$${upgraderSource.skin.price.toLocaleString()}</span>
-                    <button onclick="removeUpgraderSource()" class="text-[10px] text-red-400 mt-2 hover:underline">Убрать</button>
-                `;
-                document.getElementById('upgrader-source-box').className = `bg-gray-900/50 border-2 rounded-2xl p-4 flex flex-col items-center justify-between min-h-[170px] text-center rarity-${upgraderSource.skin.rarity}`;
-            }
-            calculateUpgradeOdds();
-        }
-
-        function renderUpgraderTarget() {
-            const container = document.getElementById('upgrader-target-content');
-            if (!upgraderTarget) {
-                container.innerHTML = `
-                    <button onclick="openUpgradeSelector('target')" class="border border-dashed border-gray-700 hover:border-yellow-500/50 rounded-2xl w-14 h-14 flex items-center justify-center text-gray-500 hover:text-yellow-500 transition mb-2">
-                        <i class="fa-solid fa-crosshairs text-lg"></i>
-                    </button>
-                    <span class="text-xs text-gray-500">Выбрать</span>
-                `;
-                document.getElementById('upgrader-target-box').className = 'bg-gray-900/50 border border-gray-800 rounded-2xl p-4 flex flex-col items-center justify-between min-h-[170px] text-center';
-            } else {
-                container.innerHTML = `
-                    <div class="w-16 h-16">
-                        ${getSkinSvg(upgraderTarget.icon, RARITIES[upgraderTarget.rarity].color)}
-                    </div>
-                    <span class="text-[11px] font-bold text-gray-200 mt-1 truncate max-w-full block">${upgraderTarget.name.split(' | ')[1] || upgraderTarget.name}</span>
-                    <span class="text-xs font-semibold text-yellow-500">$${upgraderTarget.price.toLocaleString()}</span>
-                    <button onclick="removeUpgraderTarget()" class="text-[10px] text-red-400 mt-2 hover:underline">Убрать</button>
-                `;
-                document.getElementById('upgrader-target-box').className = `bg-gray-900/50 border-2 rounded-2xl p-4 flex flex-col items-center justify-between min-h-[170px] text-center rarity-${upgraderTarget.rarity}`;
-            }
-            calculateUpgradeOdds();
-        }
-
-        function removeUpgraderSource() {
-            upgraderSource = null;
-            renderUpgraderSource();
-        }
-
-        function removeUpgraderTarget() {
-            upgraderTarget = null;
-            renderUpgraderTarget();
-        }
-
-        function openUpgradeSelector(type) {
-            if (isUpgrading) return;
-            const modal = document.getElementById('selector-modal');
-            const title = document.getElementById('selector-modal-title');
-            const list = document.getElementById('selector-modal-list');
-            list.innerHTML = '';
-
-            if (type === 'source') {
-                title.innerText = 'Выберите скин для улучшения';
-                if (inventory.length === 0) {
-                    list.innerHTML = `<div class="text-center py-6 text-gray-500">Ваш склад пуст. Сначала добудьте скины!</div>`;
-                } else {
-                    inventory.forEach((skin, idx) => {
-                        const row = document.createElement('div');
-                        row.className = 'bg-gray-950 border border-gray-800 rounded-xl p-3 flex justify-between items-center hover:border-yellow-500/50 cursor-pointer transition';
-                        row.onclick = () => {
-                            upgraderSource = { index: idx, skin: skin };
-                            renderUpgraderSource();
-                            closeSelectorModal();
-                        };
-                        row.innerHTML = `
-                            <div class="flex items-center space-x-3">
-                                <div class="w-12 h-12 flex-shrink-0 bg-gray-900/60 rounded border rarity-${skin.rarity}">
-                                    ${getSkinSvg(skin.icon, RARITIES[skin.rarity].color)}
-                                </div>
-                                <div class="text-left">
-                                    <span class="text-[10px] font-semibold text-gray-500 block">${skin.wear}</span>
-                                    <span class="text-xs font-bold text-gray-200">${skin.name}</span>
-                                </div>
-                            </div>
-                            <span class="font-bold text-yellow-500 text-sm">$${skin.price.toLocaleString()}</span>
-                        `;
-                        list.appendChild(row);
-                    });
-                }
-            } else {
-                title.innerText = 'Выберите желаемый скин-цель';
-                const sortedDb = [...SKINS_DB].sort((a, b) => a.price - b.price);
-                sortedDb.forEach(skin => {
-                    if (upgraderSource && skin.price <= upgraderSource.skin.price) return;
-                    
-                    const row = document.createElement('div');
-                    row.className = 'bg-gray-950 border border-gray-800 rounded-xl p-3 flex justify-between items-center hover:border-yellow-500/50 cursor-pointer transition';
-                    row.onclick = () => {
-                        upgraderTarget = skin;
-                        renderUpgraderTarget();
-                        closeSelectorModal();
-                    };
-                    row.innerHTML = `
-                        <div class="flex items-center space-x-3">
-                            <div class="w-12 h-12 flex-shrink-0 bg-gray-900/60 rounded border rarity-${skin.rarity}">
-                                ${getSkinSvg(skin.icon, RARITIES[skin.rarity].color)}
-                            </div>
-                            <div class="text-left">
-                                <span class="text-[10px] font-semibold text-gray-500 block">${RARITIES[skin.rarity].badge}</span>
-                                <span class="text-xs font-bold text-gray-200">${skin.name}</span>
-                            </div>
-                        </div>
-                        <span class="font-bold text-yellow-500 text-sm">$${skin.price.toLocaleString()}</span>
-                    `;
-                    list.appendChild(row);
-                });
-            }
-
-            modal.classList.remove('hidden');
-        }
-
-        function closeSelectorModal() {
-            document.getElementById('selector-modal').classList.add('hidden');
-        }
-
-        // Upgrade calculations
-        function calculateUpgradeOdds() {
-            if (!upgraderSource || !upgraderTarget) {
-                document.getElementById('upgrade-chance-percent').innerText = '0%';
-                document.getElementById('upgrade-chance-circle').style.strokeDashoffset = '440';
-                document.getElementById('upgrade-run-btn').disabled = true;
-                document.getElementById('upgrade-run-btn').className = 'w-full py-3.5 px-4 rounded-xl font-bold header-font uppercase tracking-widest text-sm bg-gray-800 text-gray-500 cursor-not-allowed';
-                return;
-            }
-
-            let baseChance = (upgraderSource.skin.price / upgraderTarget.price) * 100;
-            
-            // Apply multipliers: PremiumVIP gets x4, Standard VIP gets x2
-            const mult = isPremiumVipActive ? 4 : (isVipActive ? 2 : 1);
-            let finalChance = baseChance * mult;
-            if (finalChance > 100) finalChance = 100;
-
-            document.getElementById('upgrade-chance-percent').innerText = `${finalChance.toFixed(1)}%`;
-            
-            const offset = 440 - (440 * finalChance) / 100;
-            document.getElementById('upgrade-chance-circle').style.strokeDashoffset = offset;
-
-            document.getElementById('upgrade-run-btn').disabled = false;
-            document.getElementById('upgrade-run-btn').className = 'w-full py-3.5 px-4 rounded-xl font-bold header-font uppercase tracking-widest text-sm bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-lg active:scale-95 transition cursor-pointer hover:from-emerald-500 hover:to-teal-400';
-        }
-
-        function runUpgrader() {
-            if (isUpgrading || !upgraderSource || !upgraderTarget) return;
-
-            isUpgrading = true;
-            document.getElementById('upgrade-run-btn').disabled = true;
-            document.getElementById('upgrade-run-btn').innerText = 'Улучшаем...';
-
-            let baseChance = (upgraderSource.skin.price / upgraderTarget.price) * 100;
-            const mult = isPremiumVipActive ? 4 : (isVipActive ? 2 : 1);
-            let finalChance = baseChance * mult;
-            if (finalChance > 100) finalChance = 100;
-
-            const roll = Math.random() * 100;
-            const win = roll <= finalChance;
-
-            const ticker = document.getElementById('upgrade-ticker');
-            const wheelContainer = document.getElementById('wheel-container');
-            ticker.style.transition = 'none';
-            ticker.style.transform = 'rotate(0deg)';
-            ticker.classList.remove('opacity-0');
-
-            void ticker.offsetWidth;
-
-            const randomRotationSweep = 360 * 4;
-            const finalStopDegree = win ? (Math.random() * (finalChance / 100 * 360)) : ((finalChance / 100 * 360) + Math.random() * ((1 - finalChance/100) * 360));
-            const totalRotation = randomRotationSweep + finalStopDegree;
-
-            // Smooth upgrade wheel rotation
-            ticker.style.transition = 'transform 3.5s cubic-bezier(0.1, 0.8, 0.2, 1)';
-            ticker.style.transform = `rotate(${totalRotation}deg)`;
-
-            // Sound acceleration effects
-            let tickCounter = 0;
-            const beatInterval = setInterval(() => {
-                if (!isUpgrading) { clearInterval(beatInterval); return; }
-                playTickSound();
-            }, 250);
-
-            setTimeout(() => {
-                clearInterval(beatInterval);
-                ticker.classList.add('opacity-0');
-
-                if (win) {
-                    playWinSound(upgraderTarget.rarity);
-                    inventory.splice(upgraderSource.index, 1);
-                    inventory.push(upgraderTarget);
-                    showToast('ОГРОМНЫЙ УСПЕХ! Скин улучшен!', 'success');
-                    
-                    // Neon green pulse on wheel
-                    wheelContainer.classList.add('ring-4', 'ring-emerald-500');
-                    setTimeout(() => wheelContainer.classList.remove('ring-4', 'ring-emerald-500'), 1500);
-
-                    showWinModal(upgraderTarget);
-                } else {
-                    playFailSound();
-                    inventory.splice(upgraderSource.index, 1);
-                    showToast('Улучшение провалилось. Предмет утерян.', 'error');
-                    
-                    // Red flash effect
-                    wheelContainer.classList.add('ring-4', 'ring-red-500');
-                    setTimeout(() => wheelContainer.classList.remove('ring-4', 'ring-red-500'), 1500);
-                }
-
-                updateBalanceUI();
-                resetUpgrader();
-                saveProgressToCloud();
-            }, 3700);
-        }
-
-        // --- CONTRACTS ---
-        function resetContracts() {
-            selectedContractItems = [];
-            renderContractSlots();
-            renderContractInventory();
-        }
-
-        function renderContractSlots() {
-            const container = document.getElementById('contract-slots');
-            container.innerHTML = '';
-
-            for (let i = 0; i < 10; i++) {
-                const slot = document.createElement('div');
-                
-                if (i < selectedContractItems.length) {
-                    const skinIdx = selectedContractItems[i];
-                    const skin = inventory[skinIdx];
-                    slot.className = `w-14 h-14 border rounded-lg flex items-center justify-center relative bg-gray-950 p-1 rarity-${skin.rarity}`;
-                    slot.innerHTML = `
-                        ${getSkinSvg(skin.icon, RARITIES[skin.rarity].color)}
-                        <button onclick="removeContractItem(${i})" class="absolute -top-1 -right-1 bg-red-600 text-white rounded-full w-4 h-4 text-[8px] flex items-center justify-center hover:bg-red-500 transition shadow">
-                            <i class="fa-solid fa-times"></i>
-                        </button>
-                    `;
-                } else {
-                    slot.className = 'w-14 h-14 border border-dashed border-gray-700 bg-gray-950/20 rounded-lg flex items-center justify-center text-gray-600';
-                    slot.innerHTML = `<i class="fa-solid fa-lock-open text-xs"></i>`;
-                }
-                container.appendChild(slot);
-            }
-
-            document.getElementById('contract-selected-count').innerText = `${selectedContractItems.length} / 10`;
-
-            const btn = document.getElementById('contract-run-btn');
-            if (selectedContractItems.length === 10) {
-                btn.disabled = false;
-                btn.className = 'bg-gradient-to-r from-yellow-600 to-yellow-500 hover:from-yellow-500 hover:to-yellow-400 text-gray-950 px-6 py-2.5 rounded-lg font-bold header-font uppercase text-xs tracking-wider transition active:scale-95 cursor-pointer';
-            } else {
-                btn.disabled = true;
-                btn.className = 'bg-gray-800 text-gray-500 px-6 py-2.5 rounded-lg font-bold header-font uppercase text-xs tracking-wider transition cursor-not-allowed';
-            }
-        }
-
-        function renderContractInventory() {
-            const grid = document.getElementById('contract-inventory-grid');
-            grid.innerHTML = '';
-
-            if (inventory.length === 0) {
-                grid.innerHTML = `<div class="col-span-2 text-center text-gray-500 py-6">Ваш инвентарь пуст</div>`;
-                return;
-            }
-
-            inventory.forEach((skin, idx) => {
-                const isSelected = selectedContractItems.includes(idx);
-                if (isSelected) return;
-
-                const card = document.createElement('div');
-                card.className = `bg-gray-950 border border-gray-800 rounded-xl p-2.5 flex justify-between items-center hover:border-yellow-500/40 cursor-pointer transition`;
-                card.onclick = () => addContractItem(idx);
-
-                card.innerHTML = `
-                    <div class="flex items-center space-x-2">
-                        <div class="w-10 h-10 flex-shrink-0 bg-gray-900 rounded border rarity-${skin.rarity}">
-                            ${getSkinSvg(skin.icon, RARITIES[skin.rarity].color)}
-                        </div>
-                        <div class="text-left">
-                            <span class="text-[10px] text-gray-400 block truncate max-w-[90px]">${skin.name.split(' | ')[1] || skin.name}</span>
-                            <span class="text-[9px] font-semibold text-yellow-500">$${skin.price.toLocaleString()}</span>
-                        </div>
-                    </div>
-                    <i class="fa-solid fa-plus text-[10px] text-gray-500"></i>
-                `;
-                grid.appendChild(card);
-            });
-        }
-
-        function addContractItem(idx) {
-            if (selectedContractItems.length >= 10) {
-                showToast('Максимум 10 предметов для контракта', 'warn');
-                return;
-            }
-            selectedContractItems.push(idx);
-            renderContractSlots();
-            renderContractInventory();
-        }
-
-        function removeContractItem(slotIdx) {
-            selectedContractItems.splice(slotIdx, 1);
-            renderContractSlots();
-            renderContractInventory();
-        }
-
-        function signContract() {
-            if (selectedContractItems.length !== 10) return;
-
-            const rarityDistribution = {};
-            selectedContractItems.forEach(idx => {
-                const s = inventory[idx];
-                rarityDistribution[s.rarity] = (rarityDistribution[s.rarity] || 0) + 1;
-            });
-
-            let dominantRarity = 'common';
-            let maxCount = -1;
-            for (const [r, count] of Object.entries(rarityDistribution)) {
-                if (count > maxCount) {
-                    maxCount = count;
-                    dominantRarity = r;
-                }
-            }
-
-            let targetRarity = 'common';
-            if (dominantRarity === 'common') targetRarity = 'uncommon';
-            else if (dominantRarity === 'uncommon') targetRarity = 'rare';
-            else if (dominantRarity === 'rare') targetRarity = 'classified';
-            else if (dominantRarity === 'classified') targetRarity = 'covert';
-            else targetRarity = 'covert';
-
-            // Ensure we do not roll Godlike mythics inside regular contract
-            const possiblePool = SKINS_DB.filter(s => s.rarity === targetRarity && !s.id.startsWith('vip_') && !s.id.startsWith('god_'));
-            const rolledBase = possiblePool[Math.floor(Math.random() * possiblePool.length)];
-
-            const finalProduct = {
-                ...rolledBase,
-                float: (Math.random() * 0.1).toFixed(4),
-                wear: 'Прямо с завода (FN)',
-                price: parseFloat((rolledBase.price * 1.25).toFixed(2))
-            };
-
-            const sortedIndices = [...selectedContractItems].sort((a, b) => b - a);
-            sortedIndices.forEach(idx => {
-                inventory.splice(idx, 1);
-            });
-
-            inventory.push(finalProduct);
-            
-            playWinSound(finalProduct.rarity);
-            showWinModal(finalProduct);
-            
-            showToast('Контракт обмена выполнен успешно!', 'success');
-            
-            updateBalanceUI();
-            resetContracts();
-            saveProgressToCloud();
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-2');
+                toast.classList.remove('opacity-100', 'translate-y-0');
+            }, 3000);
         }
     </script>
 </body>
 </html>
-
-```
